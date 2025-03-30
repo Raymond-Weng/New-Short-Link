@@ -1,5 +1,8 @@
 package com.raymondweng.newshortlink;
 
+import com.raymondweng.newshortlink.exception.LinkNotFoundException;
+import com.raymondweng.newshortlink.exception.NoEnoughQuotaException;
+import com.raymondweng.newshortlink.exception.TokenNotFoundException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -39,15 +42,17 @@ public class NewShortLinkApplication {
 						"KEY TEXT NOT NULL)");
 				statement.close();
 				statement = connection.createStatement();
-				statement.execute("INSERT INTO KEYS (KEY) VALUES ('AAA')");
+				statement.execute("INSERT INTO KEYS (KEY) VALUES ('aaa')");
 				statement.close();
 				// tokens
 				statement = connection.createStatement();
 				statement.executeUpdate("CREATE TABLE TOKENS" +
 						"(DISCORD_ID TEXT PRIMARY KEY NOT NULL, " +
-						"TOKEN TEXT NOT NULL, " +
-						"QUOTA INTEGER," +
-						"QUOTA_RESET DATE NOT NULL)");
+						"TOKEN TEXT UNIQUE NOT NULL, " +
+						"THREE_MONTH_QUOTA INTEGER NOT NULL," +
+						"NO_EXPIRATION_QUOTA INTEGER NOT NULL," +
+						"QUOTA_RESET DATE NOT NULL, " +
+						"TOKEN_TYPE INTEGER NOT NULL)");
 				statement.close();
 				statement = connection.createStatement();
 				statement.execute("CREATE UNIQUE INDEX token_index ON TOKENS (DISCORD_ID, TOKEN)");
@@ -65,6 +70,6 @@ public class NewShortLinkApplication {
 		}
 
 		SpringApplication.run(NewShortLinkApplication.class, args);
-	}
+    }
 
 }
