@@ -1,8 +1,5 @@
 package com.raymondweng.newshortlink;
 
-import com.raymondweng.newshortlink.exception.LinkNotFoundException;
-import com.raymondweng.newshortlink.exception.NoEnoughQuotaException;
-import com.raymondweng.newshortlink.exception.TokenNotFoundException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -47,7 +44,7 @@ public class NewShortLinkApplication {
 				// tokens
 				statement = connection.createStatement();
 				statement.executeUpdate("CREATE TABLE TOKENS" +
-						"(DISCORD_ID TEXT PRIMARY KEY NOT NULL, " +
+						"(OWNER TEXT PRIMARY KEY NOT NULL, " +
 						"TOKEN TEXT UNIQUE NOT NULL, " +
 						"THREE_MONTH_QUOTA INTEGER NOT NULL," +
 						"NO_EXPIRATION_QUOTA INTEGER NOT NULL," +

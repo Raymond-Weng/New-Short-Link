@@ -10,9 +10,19 @@ public class LinkManager {
     public static final int THREE_MONTH_LINK = 1;
     public static final int NO_EXPIRATION_LINK = 2;
 
-    public static String getLink(String URL, String token, int type) throws NoEnoughQuotaException, TokenNotFoundException, SQLException {
+    public static String getLink(String URL, String token, int type, boolean useBetterTokenWhenNotEnough) throws NoEnoughQuotaException, TokenNotFoundException, SQLException {
         // use token
-        useToken(token, type);
+        if(useBetterTokenWhenNotEnough){
+            try{
+                useToken(token, type);
+            }catch (NoEnoughQuotaException e){
+                if(type != NO_EXPIRATION_LINK){
+                    useToken(token, NO_EXPIRATION_LINK);
+                }
+            }
+        }else{
+            useToken(token, type);
+        }
 
         // fill un-used keys
         Connection connection = DriverManager.getConnection("jdbc:sqlite:./database/data.db");
@@ -124,7 +134,21 @@ public class LinkManager {
         return token;
     }
 
-    public String getURL(String Link) throws LinkNotFoundException {
-        return null;
+    public String getURL(String key) throws LinkNotFoundException, SQLException {
+        Connection connection = DriverManager.getConnection("jdbc:sqlite:./database/links.db");
+        PreparedStatement statement = connection.prepareStatement("SELECT LINK FROM LINKS WHERE KEY = ?");
+        statement.setString(1, key);
+        ResultSet resultSet = statement.executeQuery();
+        if (resultSet.next()) {
+            resultSet.close();
+            statement.close();
+            connection.close();
+            return resultSet.getString("LINK");
+        }else{
+            resultSet.close();
+            statement.close();
+            connection.close();
+            throw new LinkNotFoundException();
+        }
     }
 }
