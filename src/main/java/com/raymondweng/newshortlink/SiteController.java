@@ -9,4 +9,9 @@ public class SiteController {
     public String index() {
         return "index.html";
     }
+
+    @RequestMapping("/api")
+    public String api() {
+        return "api.html";
+    }
 }

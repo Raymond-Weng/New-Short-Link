@@ -134,7 +134,7 @@ public class LinkManager {
         return token;
     }
 
-    public String getURL(String key) throws LinkNotFoundException, SQLException {
+    public static String getURL(String key) throws LinkNotFoundException, SQLException {
         Connection connection = DriverManager.getConnection("jdbc:sqlite:./database/links.db");
         PreparedStatement statement = connection.prepareStatement("SELECT LINK FROM LINKS WHERE KEY = ?");
         statement.setString(1, key);

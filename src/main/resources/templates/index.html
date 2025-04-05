@@ -370,47 +370,43 @@
     footer {
       background-color: var(--bg-secondary);
       color: var(--text-secondary);
-      padding: 3rem 1rem;
+      padding: 2rem 1rem;
       border-top: 1px solid var(--border);
+      text-align: center;
     }
 
-    .footer-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 2rem;
-      margin-bottom: 3rem;
+    .footer-content {
+      max-width: 600px;
+      margin: 0 auto;
     }
 
-    .footer-col h3 {
-      color: var(--text-primary);
-      font-size: 1.125rem;
-      margin-bottom: 1rem;
-    }
-
-    .footer-col p {
-      margin-bottom: 1rem;
-    }
-
-    .social-links {
+    .footer-logo {
       display: flex;
-      gap: 1rem;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
     }
 
-    .social-link {
-      color: var(--text-secondary);
-      transition: color 0.2s;
-    }
-
-    .social-link:hover {
+    .footer-logo svg {
       color: var(--accent);
     }
 
-    .footer-links {
-      list-style: none;
+    .footer-logo span {
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: var(--text-primary);
     }
 
-    .footer-links li {
-      margin-bottom: 0.5rem;
+    .footer-text {
+      margin-bottom: 1.5rem;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
     }
 
     .footer-links a {
@@ -424,9 +420,8 @@
     }
 
     .footer-bottom {
-      text-align: center;
-      padding-top: 1.5rem;
       border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
       font-size: 0.875rem;
     }
 
@@ -472,6 +467,11 @@
       .copy-btn {
         width: 100%;
         justify-content: center;
+      }
+
+      .footer-links {
+        flex-direction: column;
+        gap: 0.75rem;
       }
     }
 
@@ -529,7 +529,7 @@
 <!-- Header -->
 <header>
   <div class="container header-container">
-    <a href="#" class="logo">
+    <a href="index.html" class="logo">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
@@ -539,10 +539,9 @@
 
     <nav class="desktop-nav">
       <ul>
-        <li><a href="#">首頁</a></li>
+        <li><a href="index.html">首頁</a></li>
         <li><a href="#features">功能</a></li>
-        <li><a href="#">價格</a></li>
-        <li><a href="#">API</a></li>
+        <li><a href="api">API</a></li>
         <li><a href="#">聯絡我們</a></li>
       </ul>
     </nav>
@@ -581,7 +580,7 @@
 <!-- Mobile Menu -->
 <div id="mobile-menu" class="mobile-menu">
   <div class="mobile-menu-header">
-    <a href="#" class="logo">
+    <a href="index.html" class="logo">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
@@ -597,10 +596,9 @@
   </div>
   <nav class="mobile-nav">
     <ul>
-      <li><a href="#">首頁</a></li>
+      <li><a href="index.html">首頁</a></li>
       <li><a href="#features">功能</a></li>
-      <li><a href="#">價格</a></li>
-      <li><a href="#">API</a></li>
+      <li><a href="api">API</a></li>
       <li><a href="#">聯絡我們</a></li>
       <li>
         <a href="https://discord.gg/example" target="_blank" rel="noopener noreferrer">
@@ -720,7 +718,7 @@
         </div>
         <h3 class="feature-title">完全免費</h3>
         <p class="feature-desc">
-          我們的基礎服務完全免費，無需註冊即可使用。高級功能可通過付費計劃獲得。
+          我們的基礎服務完全免費，無需註冊即可使用。高級功能可通過API獲得。
         </p>
       </div>
 
@@ -758,68 +756,25 @@
 <!-- Footer -->
 <footer>
   <div class="container">
-    <div class="footer-grid">
-      <div class="footer-col">
-        <h3>短網址</h3>
-        <p>
-          簡化您的連結，提升分享體驗。我們提供快速、安全、可靠的URL縮短服務。
-        </p>
-        <div class="social-links">
-          <a href="#" class="social-link">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
-            </svg>
-          </a>
-          <a href="#" class="social-link">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-            </svg>
-          </a>
-          <a href="https://discord.gg/example" target="_blank" rel="noopener noreferrer" class="social-link">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path>
-            </svg>
-          </a>
-        </div>
+    <div class="footer-content">
+      <div class="footer-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+        </svg>
+        <span>短網址</span>
       </div>
-
-      <div class="footer-col">
-        <h3>產品</h3>
-        <ul class="footer-links">
-          <li><a href="#features">功能</a></li>
-          <li><a href="#">價格</a></li>
-          <li><a href="#">API文檔</a></li>
-          <li><a href="#">集成</a></li>
-          <li><a href="#">更新日誌</a></li>
-        </ul>
+      <p class="footer-text">簡化您的連結，提升分享體驗。</p>
+      <div class="footer-links">
+        <a href="index.html">首頁</a>
+        <a href="#features">功能</a>
+        <a href="api">API</a>
+        <a href="#">聯絡我們</a>
       </div>
-
-      <div class="footer-col">
-        <h3>資源</h3>
-        <ul class="footer-links">
-          <li><a href="#">幫助中心</a></li>
-          <li><a href="#">開發者文檔</a></li>
-          <li><a href="#">社群</a></li>
-          <li><a href="#">狀態</a></li>
-          <li><a href="#">部落格</a></li>
-        </ul>
+      <div class="footer-bottom">
+        <p>© <span id="current-year"></span> 短網址服務. 保留所有權利.</p>
+        <p class="credit">由Raymond Weng製作</p>
       </div>
-
-      <div class="footer-col">
-        <h3>公司</h3>
-        <ul class="footer-links">
-          <li><a href="#">關於我們</a></li>
-          <li><a href="#">聯絡我們</a></li>
-          <li><a href="#">工作機會</a></li>
-          <li><a href="#">隱私政策</a></li>
-          <li><a href="#">服務條款</a></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="footer-bottom">
-      <p>© <span id="current-year"></span> 短網址服務. 保留所有權利.</p>
-      <p class="credit">由Raymond Weng製作</p>
     </div>
   </div>
 </footer>
