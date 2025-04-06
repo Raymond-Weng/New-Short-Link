@@ -14,4 +14,9 @@ public class SiteController {
     public String api() {
         return "api.html";
     }
+
+    @RequestMapping("/404")
+    public String notFound() {
+        return "404.html";
+    }
 }

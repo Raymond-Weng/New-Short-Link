@@ -5,25 +5,16 @@ import com.raymondweng.newshortlink.exception.NoEnoughQuotaException;
 import com.raymondweng.newshortlink.exception.TokenNotFoundException;
 
 import java.sql.*;
+import java.util.List;
+import java.util.Random;
 
 public class LinkManager {
+    public static final List<String> BAN_KEYS = List.of("api", "discord");
+
     public static final int THREE_MONTH_LINK = 1;
     public static final int NO_EXPIRATION_LINK = 2;
 
-    public static String getLink(String URL, String token, int type, boolean useBetterTokenWhenNotEnough) throws NoEnoughQuotaException, TokenNotFoundException, SQLException {
-        // use token
-        if(useBetterTokenWhenNotEnough){
-            try{
-                useToken(token, type);
-            }catch (NoEnoughQuotaException e){
-                if(type != NO_EXPIRATION_LINK){
-                    useToken(token, NO_EXPIRATION_LINK);
-                }
-            }
-        }else{
-            useToken(token, type);
-        }
-
+    public static String getLink() throws SQLException {
         // fill un-used keys
         Connection connection = DriverManager.getConnection("jdbc:sqlite:./database/data.db");
         Statement statement = connection.createStatement();
@@ -43,7 +34,7 @@ public class LinkManager {
             for (int i = 0; i < last.length(); i++) {
                 arr[i] = last.charAt(i);
             }
-            for(int i = 0; i < 100; i++){
+            for(int i = 0; i < 101; i++){
                 for(int r = arr.length-1; r >= -1; r--){
                     if(r >= 0){
                         arr[r] += 1;
@@ -63,12 +54,23 @@ public class LinkManager {
                 for (int j : arr) {
                     res.append((char) j);
                 }
+                if(BAN_KEYS.contains(res.toString())){
+                    i--;
+                    continue;
+                }
                 statement = connection.createStatement();
                 statement.execute("INSERT INTO KEYS (KEY) VALUES (\"" + res + "\")");
+                statement.close();
             }
+            cnt += 100;
         }
-
-        return null;
+        statement = connection.createStatement();
+        resultSet = statement.executeQuery("SELECT * FROM (SELECT * FROM KEYS ORDER BY ID ASC LIMIT " + new Random().nextInt(cnt) + ") ORDER BY ID DESC LIMIT 1");
+        String res = resultSet.getString(1);
+        resultSet.close();
+        statement.close();
+        connection.close();
+        return res;
     }
 
     private static void useToken(String token, int type) throws NoEnoughQuotaException, TokenNotFoundException, SQLException {

@@ -11,14 +11,16 @@ import java.sql.SQLException;
 @RestController
 public class RequestController {
     @GetMapping("/{id}")
-    public RedirectView request(@PathVariable String id) {
+    public RedirectView request(@PathVariable String id) throws SQLException {
         try {
             return new RedirectView(LinkManager.getURL(id));
         } catch (LinkNotFoundException e) {
             return new RedirectView("/404");
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 
+    @GetMapping("/discord")
+    public RedirectView discord() throws SQLException {
+        return new RedirectView("https://discord.com/invite/yvdDjgPwxf");
+    }
 }

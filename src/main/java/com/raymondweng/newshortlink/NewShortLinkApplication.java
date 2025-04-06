@@ -52,7 +52,7 @@ public class NewShortLinkApplication {
 						"TOKEN_TYPE INTEGER NOT NULL)");
 				statement.close();
 				statement = connection.createStatement();
-				statement.execute("CREATE UNIQUE INDEX token_index ON TOKENS (DISCORD_ID, TOKEN)");
+				statement.execute("CREATE UNIQUE INDEX token_index ON TOKENS (OWNER, TOKEN)");
 				statement.close();
 				// tickets (in discord)
 				statement = connection.createStatement();
