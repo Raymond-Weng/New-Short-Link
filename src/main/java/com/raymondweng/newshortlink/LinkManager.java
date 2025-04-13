@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Random;
 
 public class LinkManager {
-    public static final List<String> BAN_KEYS = List.of("api", "discord");
+    public static final List<String> BAN_KEYS = List.of("api", "discord", "create");
 
     public static final int THREE_MONTH_LINK = 1;
     public static final int NO_EXPIRATION_LINK = 2;
