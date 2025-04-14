@@ -34,18 +34,24 @@ public class LinkManager {
             for (int i = 0; i < last.length(); i++) {
                 arr[i] = last.charAt(i);
             }
-            for(int i = 0; i < 101; i++){
-                for(int r = arr.length-1; r >= -1; r--){
-                    if(r >= 0){
+            for (int i = 0; i < 101; i++) {
+                for (int r = arr.length - 1; r >= -1; r--) {
+                    if (r >= 0) {
                         arr[r] += 1;
-                        if(arr[r] <= (int)'z'){
+                        if (arr[r] <= (int) '9') {
                             break;
-                        }else{
+                        } else if (arr[r] <= (int) 'z') {
+                            if (arr[r] >= (int) 'a') {
+                                break;
+                            } else {
+                                arr[r] = '0';
+                            }
+                        } else {
                             arr[r] = 'a';
                         }
-                    }else{
-                        int[] newArr = new int[arr.length+1];
-                        newArr[0] = 'a';
+                    } else {
+                        int[] newArr = new int[arr.length + 1];
+                        newArr[0] = '0';
                         System.arraycopy(arr, 0, newArr, 1, arr.length);
                         arr = newArr;
                     }
@@ -54,7 +60,7 @@ public class LinkManager {
                 for (int j : arr) {
                     res.append((char) j);
                 }
-                if(BAN_KEYS.contains(res.toString())){
+                if (BAN_KEYS.contains(res.toString())) {
                     i--;
                     continue;
                 }
@@ -87,13 +93,13 @@ public class LinkManager {
         boolean hasQuotaLimit;
         if (resultSet.next()) {
             hasQuotaLimit = resultSet.getInt(1) == -1;
-            if(hasQuotaLimit && resultSet.getInt(1) == 0) {
+            if (hasQuotaLimit && resultSet.getInt(1) == 0) {
                 resultSet.close();
                 statement.close();
                 connection.close();
                 throw new NoEnoughQuotaException();
             }
-        }else{
+        } else {
             resultSet.close();
             statement.close();
             connection.close();
@@ -101,8 +107,8 @@ public class LinkManager {
         }
         resultSet.close();
         statement.close();
-        if(hasQuotaLimit){
-            statement = switch (type){
+        if (hasQuotaLimit) {
+            statement = switch (type) {
                 case THREE_MONTH_LINK ->
                         connection.prepareStatement("UPDATE TOKENS SET THREE_MONTH_QUOTA = THREE_MONTH_QUOTA - 1 WHERE TOKEN = ?");
                 case NO_EXPIRATION_LINK ->
@@ -124,7 +130,7 @@ public class LinkManager {
         ResultSet resultSet = statement.executeQuery();
         if (resultSet.next()) {
             token = resultSet.getString("KEY");
-        }else{
+        } else {
             resultSet.close();
             statement.close();
             connection.close();
@@ -146,7 +152,7 @@ public class LinkManager {
             statement.close();
             connection.close();
             return resultSet.getString("LINK");
-        }else{
+        } else {
             resultSet.close();
             statement.close();
             connection.close();
