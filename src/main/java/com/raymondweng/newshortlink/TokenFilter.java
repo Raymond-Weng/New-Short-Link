@@ -18,12 +18,27 @@ public class TokenFilter extends OncePerRequestFilter {
             String authorization = request.getHeader("Authorization");
             if (authorization != null && authorization.startsWith("Bearer ")) {
                 String token = authorization.substring(7);
-                //TODO
+                try {
+                    int type;
+                    switch (path) {
+                        case "/create/three_months":
+                            type = LinkManager.THREE_MONTH_LINK;
+                            break;
+                        case "/create/no_expiration":
+                            type = LinkManager.NO_EXPIRATION_LINK;
+                            break;
+                        default:
+                            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                            return;
+                    }
+                }catch (Exception e) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                }
                 filterChain.doFilter(request, response);
                 return;
             }
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        }else{
+        } else {
             filterChain.doFilter(request, response);
         }
     }

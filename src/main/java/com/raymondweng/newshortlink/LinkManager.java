@@ -79,7 +79,7 @@ public class LinkManager {
         return res;
     }
 
-    private static void useToken(String token, int type) throws NoEnoughQuotaException, TokenNotFoundException, SQLException {
+    public static void useToken(String token, int type) throws NoEnoughQuotaException, TokenNotFoundException, SQLException {
         Connection connection = DriverManager.getConnection("jdbc:sqlite:./database/data.db");
         PreparedStatement statement = switch (type) {
             case THREE_MONTH_LINK ->
