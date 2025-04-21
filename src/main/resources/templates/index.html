@@ -254,6 +254,8 @@
       font-weight: 500;
       cursor: pointer;
       white-space: nowrap;
+      position: relative;
+      overflow: hidden;
     }
 
     .submit-btn:hover {
@@ -265,13 +267,75 @@
       cursor: not-allowed;
     }
 
+    /* 計時器動畫 */
+    .cooldown-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      border-radius: 0.375rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .cooldown-overlay.active {
+      opacity: 1;
+    }
+
+    .cooldown-timer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 4px;
+      background-color: rgba(255, 255, 255, 0.7);
+      width: 100%;
+      transform-origin: left;
+      transform: scaleX(0);
+      transition: transform 10s linear;
+    }
+
+    .cooldown-timer.active {
+      transform: scaleX(1);
+    }
+
     .result-card {
-      padding: 1rem;
+      padding: 1.5rem;
       background-color: var(--card-bg);
       border-radius: 0.5rem;
       border: 1px solid var(--border);
       margin-bottom: 1.5rem;
       display: none;
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .result-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .expiration-info {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
     .result-content {
@@ -288,6 +352,14 @@
       gap: 0.5rem;
       font-weight: 500;
       color: var(--text-primary);
+      word-break: break-all;
+    }
+
+    .original-url {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+      word-break: break-all;
     }
 
     .copy-btn {
@@ -305,6 +377,13 @@
 
     .copy-btn:hover {
       background-color: var(--bg-primary);
+    }
+
+    .error-message {
+      color: #ef4444;
+      margin-top: 0.5rem;
+      font-size: 0.875rem;
+      display: none;
     }
 
     .terms {
@@ -524,6 +603,39 @@
         gap: 0.75rem;
       }
     }
+
+    .rate-limit-error {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background-color: rgba(239, 68, 68, 0.1);
+      border-radius: 0.375rem;
+      border-left: 3px solid #ef4444;
+      animation: pulse 2s infinite;
+    }
+
+    .rate-limit-error svg {
+      color: #ef4444;
+      flex-shrink: 0;
+    }
+
+    .countdown-text {
+      font-weight: bold;
+      color: #ef4444;
+    }
+
+    @keyframes pulse {
+      0% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.8;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
   </style>
 </head>
 <body>
@@ -561,7 +673,7 @@
           <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
         </svg>
       </button>
-      <a href="https://rwlink.us.kg/discord" target="_blank" rel="noopener noreferrer" class="discord-btn">
+      <a href="/discord" target="_blank" rel="noopener noreferrer" class="discord-btn">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path>
         </svg>
@@ -602,7 +714,7 @@
       <li><a href="/api">API</a></li>
       <li><a href="#">聯絡我們</a></li>
       <li>
-        <a href="https://rwlink.us.kg/discord" target="_blank" rel="noopener noreferrer">
+        <a href="/discord" target="_blank" rel="noopener noreferrer">
           加入 Discord
         </a>
       </li>
@@ -616,7 +728,7 @@
     <h1>短網址 - 簡化您的連結</h1>
     <p>快速、安全地縮短您的長網址，輕鬆分享到任何平台。我們的服務簡單易用，完全免費。</p>
     <div class="hero-buttons">
-      <a href="https://rwlink.us.kg/discord" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+      <a href="/discord" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path>
         </svg>
@@ -640,16 +752,40 @@
     <h2 class="section-title">縮短您的連結</h2>
     <form id="url-form" class="url-form">
       <input type="url" id="url-input" class="url-input" placeholder="輸入您的長網址，例如: https://example.com/very/long/url/that/needs/shortening" required>
-      <button type="submit" id="submit-btn" class="submit-btn">縮短連結</button>
+      <button type="submit" id="submit-btn" class="submit-btn">
+        縮短連結
+        <div id="cooldown-overlay" class="cooldown-overlay">
+          <span id="cooldown-text">10</span>
+        </div>
+        <div id="cooldown-timer" class="cooldown-timer"></div>
+      </button>
     </form>
+    <div id="error-message" class="error-message">
+      發生錯誤，請稍後再試。
+    </div>
     <div id="result-card" class="result-card">
-      <div class="result-content">
-        <div class="short-url">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+      <div class="result-header">
+        <h3 class="result-title">您的短網址已生成</h3>
+        <div class="expiration-info">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
           </svg>
-          <span id="short-url-text"></span>
+          <span>過期時間: <span id="expiration-date">2024/5/14 00:00</span> (UTC+8)</span>
+        </div>
+      </div>
+      <div class="result-content">
+        <div>
+          <div class="short-url">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+            <span id="short-url-text"></span>
+          </div>
+          <div class="original-url">
+            原始連結: <span id="original-url-text"></span>
+          </div>
         </div>
         <button id="copy-btn" class="copy-btn">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -661,7 +797,7 @@
       </div>
     </div>
     <div class="terms">
-      這只能維持一個月。需要更多連結？加入我們的<a href="https://rwlink.us.kg/discord" target="_blank" rel="noopener noreferrer">Discord</a>
+      這只能維持一個月。需要更多連結？加入我們的<a href="/discord" target="_blank" rel="noopener noreferrer">Discord</a>
     </div>
   </div>
 </section>
@@ -827,7 +963,54 @@
   const submitBtn = document.getElementById('submit-btn');
   const resultCard = document.getElementById('result-card');
   const shortUrlText = document.getElementById('short-url-text');
+  const originalUrlText = document.getElementById('original-url-text');
+  const expirationDate = document.getElementById('expiration-date');
   const copyBtn = document.getElementById('copy-btn');
+  const errorMessage = document.getElementById('error-message');
+  const cooldownOverlay = document.getElementById('cooldown-overlay');
+  const cooldownText = document.getElementById('cooldown-text');
+  const cooldownTimer = document.getElementById('cooldown-timer');
+
+  // 冷卻時間變數
+  let isCooldown = false;
+  let cooldownInterval;
+  let cooldownTimeLeft = 10;
+
+  // 啟動冷卻計時器
+  function startCooldown() {
+    isCooldown = true;
+    cooldownTimeLeft = 10;
+    submitBtn.disabled = true;
+    cooldownOverlay.classList.add('active');
+    cooldownTimer.classList.add('active');
+    cooldownText.textContent = cooldownTimeLeft;
+
+    cooldownInterval = setInterval(() => {
+      cooldownTimeLeft--;
+      cooldownText.textContent = cooldownTimeLeft;
+
+      if (cooldownTimeLeft <= 0) {
+        clearInterval(cooldownInterval);
+        endCooldown();
+      }
+    }, 1000);
+  }
+
+  // 結束冷卻計時器
+  function endCooldown() {
+    isCooldown = false;
+    submitBtn.disabled = false;
+    cooldownOverlay.classList.remove('active');
+    cooldownTimer.classList.remove('active');
+    // 重置計時器動畫
+    setTimeout(() => {
+      cooldownTimer.style.transition = 'none';
+      cooldownTimer.style.transform = 'scaleX(0)';
+      setTimeout(() => {
+        cooldownTimer.style.transition = 'transform 10s linear';
+      }, 50);
+    }, 100);
+  }
 
   urlForm.addEventListener('submit', function(e) {
     e.preventDefault();
@@ -839,7 +1022,7 @@
       return;
     }
 
-    // Validate URL
+    // 驗證URL
     try {
       new URL(url);
     } catch (err) {
@@ -847,32 +1030,96 @@
       return;
     }
 
-    // Disable button and show loading state
+    // 如果正在冷卻中，不執行請求
+    if (isCooldown) {
+      return;
+    }
+
+    // 禁用按鈕並顯示加載狀態
     submitBtn.disabled = true;
-    submitBtn.textContent = '處理中...';
+    errorMessage.style.display = 'none';
 
-    // Simulate API call
-    setTimeout(() => {
-      // Generate a random short code
-      const shortCode = Math.random().toString(36).substring(2, 8);
-      const shortUrl = `https://短網址.com/${shortCode}`;
+    // 發送API請求
+    fetch('/create/free', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        link: url
+      })
+    })
+            .then(response => {
+              if (response.status === 429) {
+                throw new Error('rate_limit_exceeded');
+              }
+              if (!response.ok) {
+                throw new Error('網絡錯誤');
+              }
+              return response.json();
+            })
+            .then(data => {
+              if (data.error) {
+                throw new Error(data.error);
+              }
 
-      // Display result
-      shortUrlText.textContent = shortUrl;
-      resultCard.style.display = 'block';
+              // 顯示結果
+              shortUrlText.textContent = data.short_link;
+              originalUrlText.textContent = data.link;
+              expirationDate.textContent = data.expiration;
+              resultCard.style.display = 'block';
 
-      // Reset form state
-      submitBtn.disabled = false;
-      submitBtn.textContent = '縮短連結';
-    }, 1000);
+              // 啟動冷卻計時器
+              startCooldown();
+            })
+            .catch(error => {
+              console.error('Error:', error);
+
+              // 處理特定的錯誤類型
+              if (error.message === 'rate_limit_exceeded') {
+                errorMessage.innerHTML = `
+            <div class="rate-limit-error">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              請求過於頻繁，請等待 <span class="countdown-text">10</span> 秒後再試
+            </div>
+          `;
+                errorMessage.style.display = 'block';
+
+                // 自動啟動冷卻計時器
+                startCooldown();
+
+                // 更新倒數計時
+                let countdown = 10;
+                const countdownEl = errorMessage.querySelector('.countdown-text');
+                const countdownInterval = setInterval(() => {
+                  countdown--;
+                  if (countdownEl) countdownEl.textContent = countdown;
+                  if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    errorMessage.style.display = 'none';
+                  }
+                }, 1000);
+              } else {
+                errorMessage.textContent = `發生錯誤: ${error.message}`;
+                errorMessage.style.display = 'block';
+              }
+
+              if (error.message !== 'rate_limit_exceeded') {
+                submitBtn.disabled = false;
+              }
+            });
   });
 
-  // Copy to clipboard
+  // 複製到剪貼板
   copyBtn.addEventListener('click', function() {
     const textToCopy = shortUrlText.textContent;
 
     navigator.clipboard.writeText(textToCopy).then(() => {
-      // Change button text temporarily
+      // 暫時更改按鈕文本
       const originalText = copyBtn.innerHTML;
       copyBtn.innerHTML = `
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -889,6 +1136,68 @@
       alert('複製失敗，請手動複製');
     });
   });
+
+  // 模擬API響應（僅用於演示）
+  // 在實際環境中，這部分會被上面的fetch請求替代
+  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+    urlForm.onsubmit = function(e) {
+      e.preventDefault();
+
+      const url = urlInput.value.trim();
+
+      if (!url) {
+        alert('請輸入有效的URL');
+        return;
+      }
+
+      // 驗證URL
+      try {
+        new URL(url);
+      } catch (err) {
+        alert('請輸入有效的URL，包括http://或https://');
+        return;
+      }
+
+      // 如果正在冷卻中，不執行請求
+      if (isCooldown) {
+        return;
+      }
+
+      // 禁用按鈕並顯示加載狀態
+      submitBtn.disabled = true;
+      errorMessage.style.display = 'none';
+
+      // 模擬API響應延遲
+      setTimeout(() => {
+        // 生成一個隨機的短代碼
+        const shortCode = Math.random().toString(36).substring(2, 5).toUpperCase();
+
+        // 計算過期時間（當前時間 + 1個月）
+        const expirationTime = new Date();
+        expirationTime.setMonth(expirationTime.getMonth() + 1);
+        const formattedExpiration = `${expirationTime.getFullYear()}/${expirationTime.getMonth() + 1}/${expirationTime.getDate()} 00:00`;
+
+        // 模擬API響應數據
+        const responseData = {
+          link: url,
+          error: null,
+          short_link: `https://rwlink.us.kg/${shortCode}`,
+          expiration: formattedExpiration
+        };
+
+        // 顯示結果
+        shortUrlText.textContent = responseData.short_link;
+        originalUrlText.textContent = responseData.link;
+        expirationDate.textContent = responseData.expiration;
+        resultCard.style.display = 'block';
+
+        // 啟動冷卻計時器
+        startCooldown();
+      }, 1000);
+
+      return false;
+    };
+  }
 </script>
 </body>
 </html>

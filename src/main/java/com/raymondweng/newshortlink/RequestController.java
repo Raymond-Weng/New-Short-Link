@@ -27,7 +27,12 @@ public class RequestController {
     @PostMapping("/create/{type}")
     public CreateResponse create(@PathVariable String type, @RequestBody Link link) {
         CreateResponse response = new CreateResponse();
+
+        //TODO below is only for testing
         response.setLink(link.getLink());
+        response.setError(null);
+        response.setShort_link("https://rwlink.us.kg/test");
+        response.setExpiration("2024/5/14 00:00");
 
         return response;
     }

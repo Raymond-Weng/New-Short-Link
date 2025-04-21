@@ -19,4 +19,11 @@ public class SiteController {
     public String notFound() {
         return "404.html";
     }
+
+    @RequestMapping("/contacts")
+    public String contacts() {
+        return "contact.html";
+    }
+
+
 }
