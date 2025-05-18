@@ -11,9 +11,6 @@ import java.util.Random;
 public class LinkManager {
     public static final List<String> BAN_KEYS = List.of("api", "discord", "create");
 
-    public static final int THREE_MONTH_LINK = 1;
-    public static final int NO_EXPIRATION_LINK = 2;
-
     public static String getLink() throws SQLException {
         // fill un-used keys
         Connection connection = DriverManager.getConnection("jdbc:sqlite:./database/data.db");
@@ -81,13 +78,7 @@ public class LinkManager {
 
     public static void useToken(String token, int type) throws NoEnoughQuotaException, TokenNotFoundException, SQLException {
         Connection connection = DriverManager.getConnection("jdbc:sqlite:./database/data.db");
-        PreparedStatement statement = switch (type) {
-            case THREE_MONTH_LINK ->
-                    connection.prepareStatement("SELECT THREE_MONTH_QUOTA FROM TOKENS WHERE TOKEN = ?");
-            case NO_EXPIRATION_LINK ->
-                    connection.prepareStatement("SELECT NO_EXPIRATION_QUOTA FROM TOKENS WHERE TOKEN = ?");
-            default -> throw new IllegalStateException("Unexpected value: " + type);
-        };
+        PreparedStatement statement = connection.prepareStatement("SELECT QUOTA FROM TOKENS WHERE TOKEN = ?");
         statement.setString(1, token);
         ResultSet resultSet = statement.executeQuery();
         boolean hasQuotaLimit;
@@ -108,38 +99,12 @@ public class LinkManager {
         resultSet.close();
         statement.close();
         if (hasQuotaLimit) {
-            statement = switch (type) {
-                case THREE_MONTH_LINK ->
-                        connection.prepareStatement("UPDATE TOKENS SET THREE_MONTH_QUOTA = THREE_MONTH_QUOTA - 1 WHERE TOKEN = ?");
-                case NO_EXPIRATION_LINK ->
-                        connection.prepareStatement("UPDATE TOKENS SET NO_EXPIRATION_QUOTA = NO_EXPIRATION_QUOTA - 1 WHERE TOKEN = ?");
-                default -> throw new IllegalStateException("Unexpected value: " + type);
-            };
+            statement = connection.prepareStatement("UPDATE TOKENS SET QUOTA = QUOTA - 1 WHERE TOKEN = ?");
             statement.setString(1, token);
             statement.executeUpdate();
             statement.close();
         }
         connection.close();
-    }
-
-    public static String findToken(String discordID) throws SQLException, TokenNotFoundException {
-        String token;
-        Connection connection = DriverManager.getConnection("jdbc:sqlite:./database/data.db");
-        PreparedStatement statement = connection.prepareStatement("SELECT KEY FROM KEYS WHERE DISCORD_ID = ?");
-        statement.setString(1, discordID);
-        ResultSet resultSet = statement.executeQuery();
-        if (resultSet.next()) {
-            token = resultSet.getString("KEY");
-        } else {
-            resultSet.close();
-            statement.close();
-            connection.close();
-            throw new TokenNotFoundException();
-        }
-        resultSet.close();
-        statement.close();
-        connection.close();
-        return token;
     }
 
     public static String getURL(String key) throws LinkNotFoundException, SQLException {

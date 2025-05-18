@@ -24,8 +24,8 @@ public class RequestController {
         return new RedirectView("https://discord.com/invite/yvdDjgPwxf");
     }
 
-    @PostMapping("/create/{type}")
-    public CreateResponse create(@PathVariable String type, @RequestBody Link link) {
+    @PostMapping("/create/{name}")
+    public CreateResponse create(@PathVariable String name, @RequestBody Link link) {
         CreateResponse response = new CreateResponse();
 
         //TODO below is only for testing
