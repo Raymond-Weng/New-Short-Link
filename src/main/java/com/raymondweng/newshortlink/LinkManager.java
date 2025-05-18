@@ -12,7 +12,7 @@ public class LinkManager {
     public static final List<String> BAN_KEYS = List.of("api", "discord", "create");
 
     public static String getLink() throws SQLException {
-        // fill un-used keys
+        // fill unused keys
         Connection connection = DriverManager.getConnection("jdbc:sqlite:./database/data.db");
         Statement statement = connection.createStatement();
         ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM KEYS");
@@ -76,7 +76,7 @@ public class LinkManager {
         return res;
     }
 
-    public static void useToken(String token, int type) throws NoEnoughQuotaException, TokenNotFoundException, SQLException {
+    public static void useToken(String token) throws NoEnoughQuotaException, TokenNotFoundException, SQLException {
         Connection connection = DriverManager.getConnection("jdbc:sqlite:./database/data.db");
         PreparedStatement statement = connection.prepareStatement("SELECT QUOTA FROM TOKENS WHERE TOKEN = ?");
         statement.setString(1, token);

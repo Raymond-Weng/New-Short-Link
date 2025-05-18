@@ -1,5 +1,7 @@
 package com.raymondweng.newshortlink;
 
+import com.raymondweng.newshortlink.exception.NoEnoughQuotaException;
+import com.raymondweng.newshortlink.exception.TokenNotFoundException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 @Component
 public class TokenFilter extends OncePerRequestFilter {
@@ -18,7 +21,17 @@ public class TokenFilter extends OncePerRequestFilter {
             String authorization = request.getHeader("Authorization");
             if (authorization != null && authorization.startsWith("Bearer ")) {
                 String token = authorization.substring(7);
-
+                try {
+                    LinkManager.useToken(token);
+                } catch (NoEnoughQuotaException e) {
+                    response.setStatus(HttpServletResponse.SC_PAYMENT_REQUIRED);
+                    return;
+                } catch (TokenNotFoundException e) {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
                 filterChain.doFilter(request, response);
                 return;
             }
