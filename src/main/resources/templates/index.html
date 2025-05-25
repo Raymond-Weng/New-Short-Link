@@ -446,6 +446,15 @@
       color: var(--text-secondary);
     }
 
+    .feature-desc a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .feature-desc a:hover {
+      text-decoration: underline;
+    }
+
     /* Footer */
     footer {
       background-color: var(--bg-secondary);
@@ -771,7 +780,7 @@
             <circle cx="12" cy="12" r="10"></circle>
             <polyline points="12 6 12 12 16 14"></polyline>
           </svg>
-          <span>過期時間: <span id="expiration-date">2024/5/14 00:00</span> (UTC+8)</span>
+          <span>超過<span id="next-year-date"></span>未使用會被刪除</span>
         </div>
       </div>
       <div class="result-content">
@@ -797,7 +806,7 @@
       </div>
     </div>
     <div class="terms">
-      這只能維持一個月。需要更多連結？加入我們的<a href="/discord" target="_blank" rel="noopener noreferrer">Discord</a>
+      連結超過一年沒有使用會被刪除。有任何疑問？加入我們的<a href="/discord" target="_blank" rel="noopener noreferrer">Discord</a>
     </div>
   </div>
 </section>
@@ -814,9 +823,9 @@
             <path d="M13 2v7h7"></path>
           </svg>
         </div>
-        <h3 class="feature-title">詳細統計</h3>
+        <h3 class="feature-title">簡單易用</h3>
         <p class="feature-desc">
-          獲取有關您的連結的詳細分析，包括點擊次數、地理位置和設備信息。
+          無需註冊，只需輸入長網址即可立即生成短連結。直觀的界面設計，讓任何人都能輕鬆上手使用。
         </p>
       </div>
 
@@ -841,7 +850,7 @@
         </div>
         <h3 class="feature-title">自定義連結</h3>
         <p class="feature-desc">
-          創建自定義短連結，使您的品牌更加突出，提高用戶點擊率。
+          創建自定義短連結，使您的品牌更加突出，提高用戶點擊率。（加入<a href="/discord" target="_blank" rel="noopener noreferrer">Discord</a>來使用）
         </p>
       </div>
 
@@ -877,13 +886,12 @@
       <div class="feature-card">
         <div class="feature-icon">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 20h9"></path>
-            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+            <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path>
           </svg>
         </div>
-        <h3 class="feature-title">批量處理</h3>
+        <h3 class="feature-title">Discord機器人</h3>
         <p class="feature-desc">
-          一次性縮短多個URL，節省您的時間和精力，提高工作效率。
+          在Discord中直接使用我們的機器人來縮短連結，無需離開聊天環境即可快速生成短網址。
         </p>
       </div>
     </div>
@@ -964,7 +972,6 @@
   const resultCard = document.getElementById('result-card');
   const shortUrlText = document.getElementById('short-url-text');
   const originalUrlText = document.getElementById('original-url-text');
-  const expirationDate = document.getElementById('expiration-date');
   const copyBtn = document.getElementById('copy-btn');
   const errorMessage = document.getElementById('error-message');
   const cooldownOverlay = document.getElementById('cooldown-overlay');
@@ -975,6 +982,11 @@
   let isCooldown = false;
   let cooldownInterval;
   let cooldownTimeLeft = 10;
+
+  // 設置明年日期
+  const nextYear = new Date().getFullYear() + 1;
+  const nextYearDate = `${nextYear}/5/25`;
+  document.getElementById('next-year-date').textContent = nextYearDate;
 
   // 啟動冷卻計時器
   function startCooldown() {
@@ -1066,7 +1078,6 @@
               // 顯示結果
               shortUrlText.textContent = data.short_link;
               originalUrlText.textContent = data.link;
-              expirationDate.textContent = data.expiration;
               resultCard.style.display = 'block';
 
               // 啟動冷卻計時器
@@ -1136,68 +1147,6 @@
       alert('複製失敗，請手動複製');
     });
   });
-
-  // 模擬API響應（僅用於演示）
-  // 在實際環境中，這部分會被上面的fetch請求替代
-  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-    urlForm.onsubmit = function(e) {
-      e.preventDefault();
-
-      const url = urlInput.value.trim();
-
-      if (!url) {
-        alert('請輸入有效的URL');
-        return;
-      }
-
-      // 驗證URL
-      try {
-        new URL(url);
-      } catch (err) {
-        alert('請輸入有效的URL，包括http://或https://');
-        return;
-      }
-
-      // 如果正在冷卻中，不執行請求
-      if (isCooldown) {
-        return;
-      }
-
-      // 禁用按鈕並顯示加載狀態
-      submitBtn.disabled = true;
-      errorMessage.style.display = 'none';
-
-      // 模擬API響應延遲
-      setTimeout(() => {
-        // 生成一個隨機的短代碼
-        const shortCode = Math.random().toString(36).substring(2, 5).toUpperCase();
-
-        // 計算過期時間（當前時間 + 1個月）
-        const expirationTime = new Date();
-        expirationTime.setMonth(expirationTime.getMonth() + 1);
-        const formattedExpiration = `${expirationTime.getFullYear()}/${expirationTime.getMonth() + 1}/${expirationTime.getDate()} 00:00`;
-
-        // 模擬API響應數據
-        const responseData = {
-          link: url,
-          error: null,
-          short_link: `https://rwlink.us.kg/${shortCode}`,
-          expiration: formattedExpiration
-        };
-
-        // 顯示結果
-        shortUrlText.textContent = responseData.short_link;
-        originalUrlText.textContent = responseData.link;
-        expirationDate.textContent = responseData.expiration;
-        resultCard.style.display = 'block';
-
-        // 啟動冷卻計時器
-        startCooldown();
-      }, 1000);
-
-      return false;
-    };
-  }
 </script>
 </body>
 </html>

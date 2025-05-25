@@ -25,14 +25,24 @@ public class RequestController {
     }
 
     @PostMapping("/create/{name}")
-    public CreateResponse create(@PathVariable String name, @RequestBody Link link) {
+    public CreateResponse create(@PathVariable String name, @RequestBody Link link) throws SQLException {
         CreateResponse response = new CreateResponse();
-
-        //TODO below is only for testing
         response.setLink(link.getLink());
-        response.setError(null);
-        response.setShort_link("https://rwlink.us.kg/test");
-        response.setExpiration("2024/5/14 00:00");
+        String id;
+        if(name.equals("free")) {
+            id = LinkManager.getLink();
+            response.setShort_link("https://rwlink.us.kg/" + id);
+            response.setError(null);
+        }else if(LinkManager.BAN_KEYS.contains(name)) {
+            response.setShort_link(null);
+            response.setError("Baned keys requested");
+            return response;
+        }else{
+
+        }
+
+        //TODO link the link (id) with requested link
+
 
         return response;
     }

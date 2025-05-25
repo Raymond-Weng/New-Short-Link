@@ -29,12 +29,4 @@ public class CreateResponse {
     public void setShort_link(String short_link) {
         this.short_link = short_link;
     }
-
-    public String getExpiration() {
-        return expiration;
-    }
-
-    public void setExpiration(String expiration) {
-        this.expiration = expiration;
-    }
 }

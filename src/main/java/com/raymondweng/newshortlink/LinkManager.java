@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Random;
 
 public class LinkManager {
-    public static final List<String> BAN_KEYS = List.of("api", "discord", "create");
+    public static final List<String> BAN_KEYS = List.of("api", "discord", "create", "random");
 
     public static String getLink() throws SQLException {
         // fill unused keys
@@ -68,10 +68,17 @@ public class LinkManager {
             cnt += 100;
         }
         statement = connection.createStatement();
-        resultSet = statement.executeQuery("SELECT * FROM (SELECT * FROM KEYS ORDER BY ID ASC LIMIT " + new Random().nextInt(cnt) + ") ORDER BY ID DESC LIMIT 1");
+        resultSet = statement.executeQuery("SELECT * FROM (SELECT * FROM KEYS ORDER BY ID LIMIT " + new Random().nextInt(cnt) + ") ORDER BY ID DESC LIMIT 1");
         String res = resultSet.getString(1);
         resultSet.close();
         statement.close();
+        statement = connection.createStatement();
+        statement.execute("DELETE FROM KEYS WHERE KEY = \"" + res + "\"");
+        statement.close();
+        if(isLinkExist(connection, res)) {
+            connection.close();
+            return getLink();
+        }
         connection.close();
         return res;
     }
@@ -107,21 +114,39 @@ public class LinkManager {
         connection.close();
     }
 
+    public static boolean isLinkExist(Connection connection, String key) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement("SELECT LINK FROM LINKS WHERE KEY = ?");
+        statement.setString(1, key);
+        ResultSet resultSet = statement.executeQuery();
+        boolean res = resultSet.next();
+        resultSet.close();
+        statement.close();
+        return res;
+    }
+
+    public static boolean isLinkExist(String key) throws SQLException {
+        Connection connection = DriverManager.getConnection("jdbc:sqlite:./database/links.db");
+        boolean res = isLinkExist(connection, key);
+        connection.close();
+        return res;
+    }
+
     public static String getURL(String key) throws LinkNotFoundException, SQLException {
         Connection connection = DriverManager.getConnection("jdbc:sqlite:./database/links.db");
         PreparedStatement statement = connection.prepareStatement("SELECT LINK FROM LINKS WHERE KEY = ?");
         statement.setString(1, key);
         ResultSet resultSet = statement.executeQuery();
         if (resultSet.next()) {
+            String s = resultSet.getString("LINK");
             resultSet.close();
             statement.close();
             connection.close();
-            return resultSet.getString("LINK");
+            return s;
         } else {
             resultSet.close();
             statement.close();
             connection.close();
-            throw new LinkNotFoundException();
+            return null;
         }
     }
 }

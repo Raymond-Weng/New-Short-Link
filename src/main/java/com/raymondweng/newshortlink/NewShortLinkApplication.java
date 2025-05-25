@@ -36,7 +36,8 @@ public class NewShortLinkApplication {
                 statement = connection.createStatement();
                 statement.executeUpdate("CREATE TABLE KEYS" +
                         "(ID INTEGER PRIMARY KEY AUTOINCREMENT ," +
-                        "KEY TEXT NOT NULL)");
+                        "KEY TEXT NOT NULL, " +
+                        "LAST_USED DATE NOT NULL DEFAULT CURRENT_DATE)");
                 statement.close();
                 statement = connection.createStatement();
                 statement.execute("INSERT INTO KEYS (KEY) VALUES ('aaa')");
