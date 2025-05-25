@@ -7,20 +7,17 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.sql.SQLException;
+import java.util.Objects;
 
 @RestController
 public class RequestController {
     @GetMapping("/{id}")
     public RedirectView request(@PathVariable String id) throws SQLException {
-        try {
-            return new RedirectView(LinkManager.getURL(id));
-        } catch (LinkNotFoundException e) {
-            return new RedirectView("/404");
-        }
+        return new RedirectView(Objects.requireNonNullElse(LinkManager.getURL(id), "/404"));
     }
 
     @GetMapping("/discord")
-    public RedirectView discord() throws SQLException {
+    public RedirectView discord() {
         return new RedirectView("https://discord.com/invite/yvdDjgPwxf");
     }
 
@@ -29,15 +26,15 @@ public class RequestController {
         CreateResponse response = new CreateResponse();
         response.setLink(link.getLink());
         String id;
-        if(name.equals("free")) {
+        if (name.equals("free")) {
             id = LinkManager.getLink();
             response.setShort_link("https://rwlink.us.kg/" + id);
             response.setError(null);
-        }else if(LinkManager.BAN_KEYS.contains(name)) {
+        } else if (LinkManager.BAN_KEYS.contains(name)) {
             response.setShort_link(null);
             response.setError("Baned keys requested");
             return response;
-        }else{
+        } else {
 
         }
 

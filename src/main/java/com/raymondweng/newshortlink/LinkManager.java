@@ -75,7 +75,7 @@ public class LinkManager {
         statement = connection.createStatement();
         statement.execute("DELETE FROM KEYS WHERE KEY = \"" + res + "\"");
         statement.close();
-        if(isLinkExist(connection, res)) {
+        if (isLinkExist(connection, res)) {
             connection.close();
             return getLink();
         }
@@ -131,7 +131,7 @@ public class LinkManager {
         return res;
     }
 
-    public static String getURL(String key) throws LinkNotFoundException, SQLException {
+    public static String getURL(String key) throws SQLException {
         Connection connection = DriverManager.getConnection("jdbc:sqlite:./database/links.db");
         PreparedStatement statement = connection.prepareStatement("SELECT LINK FROM LINKS WHERE KEY = ?");
         statement.setString(1, key);
