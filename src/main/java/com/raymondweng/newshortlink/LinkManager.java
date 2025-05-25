@@ -21,54 +21,12 @@ public class LinkManager {
         resultSet.close();
         statement.close();
         if (cnt < 50) {
-            statement = connection.createStatement();
-            resultSet = statement.executeQuery("SELECT KEY FROM KEYS ORDER BY ID DESC LIMIT 1");
-            resultSet.next();
-            String last = resultSet.getString(1);
-            resultSet.close();
-            statement.close();
-            int[] arr = new int[last.length()];
-            for (int i = 0; i < last.length(); i++) {
-                arr[i] = last.charAt(i);
-            }
-            for (int i = 0; i < 101; i++) {
-                for (int r = arr.length - 1; r >= -1; r--) {
-                    if (r >= 0) {
-                        arr[r] += 1;
-                        if (arr[r] <= (int) '9') {
-                            break;
-                        } else if (arr[r] <= (int) 'z') {
-                            if (arr[r] >= (int) 'a') {
-                                break;
-                            } else {
-                                arr[r] = '0';
-                            }
-                        } else {
-                            arr[r] = 'a';
-                        }
-                    } else {
-                        int[] newArr = new int[arr.length + 1];
-                        newArr[0] = '0';
-                        System.arraycopy(arr, 0, newArr, 1, arr.length);
-                        arr = newArr;
-                    }
-                }
-                StringBuilder res = new StringBuilder();
-                for (int j : arr) {
-                    res.append((char) j);
-                }
-                if (BAN_KEYS.contains(res.toString())) {
-                    i--;
-                    continue;
-                }
-                statement = connection.createStatement();
-                statement.execute("INSERT INTO KEYS (KEY) VALUES (\"" + res + "\")");
-                statement.close();
-            }
+            Thread thread = new Thread(new RefillKeys());
+            thread.start();
             cnt += 100;
         }
         statement = connection.createStatement();
-        resultSet = statement.executeQuery("SELECT * FROM (SELECT * FROM KEYS ORDER BY ID LIMIT " + new Random().nextInt(cnt) + ") ORDER BY ID DESC LIMIT 1");
+        resultSet = statement.executeQuery("SELECT * FROM (SELECT * FROM KEYS ORDER BY ID LIMIT " + new Random().nextInt(cnt-1) + ") ORDER BY ID DESC LIMIT 1");
         String res = resultSet.getString(1);
         resultSet.close();
         statement.close();
