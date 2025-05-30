@@ -1,6 +1,5 @@
 package com.raymondweng.newshortlink;
 
-import com.raymondweng.newshortlink.exception.LinkNotFoundException;
 import com.raymondweng.newshortlink.exception.NoEnoughQuotaException;
 import com.raymondweng.newshortlink.exception.TokenNotFoundException;
 
@@ -26,7 +25,7 @@ public class LinkManager {
             cnt += 100;
         }
         statement = connection.createStatement();
-        resultSet = statement.executeQuery("SELECT * FROM (SELECT * FROM KEYS ORDER BY ID LIMIT " + new Random().nextInt(cnt-1) + ") ORDER BY ID DESC LIMIT 1");
+        resultSet = statement.executeQuery("SELECT * FROM (SELECT * FROM KEYS ORDER BY ID LIMIT " + new Random().nextInt(cnt - 1) + ") ORDER BY ID DESC LIMIT 1");
         String res = resultSet.getString(1);
         resultSet.close();
         statement.close();
