@@ -71,6 +71,8 @@ public class NewShortLinkApplication {
                 statement = connection.createStatement();
                 statement.execute("INSERT INTO KEYS (KEY) VALUES ('aaa')");
                 statement.close();
+                Thread thread = new Thread(new RefillKeys());
+                thread.start();
                 // tokens
                 statement = connection.createStatement();
                 statement.executeUpdate("CREATE TABLE TOKENS" +

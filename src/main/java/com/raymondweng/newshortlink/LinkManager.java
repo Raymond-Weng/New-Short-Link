@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Random;
 
 public class LinkManager {
-    public static final List<String> BAN_KEYS = List.of("api", "discord", "create", "random");
+    public static final List<String> BAN_KEYS = List.of("api", "discord", "create", "free", "contacts", "404");
 
     public static Connection getDataConnection() throws SQLException {
         return DriverManager.getConnection("jdbc:sqlite:./database/data.db");
@@ -69,7 +69,7 @@ public class LinkManager {
         int cnt = resultSet.getInt(1);
         resultSet.close();
         statement.close();
-        if (cnt < 50) {
+        if (cnt < 100) {
             Thread thread = new Thread(new RefillKeys());
             thread.start();
         }

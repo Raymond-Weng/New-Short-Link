@@ -1,11 +1,14 @@
 package com.raymondweng.newshortlink;
 
+import com.raymondweng.newshortlink.request.Link;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
 import org.jetbrains.annotations.NotNull;
+
+import java.sql.SQLException;
 
 public class BotController implements EventListener {
     public static JDA jda;
@@ -29,7 +32,13 @@ public class BotController implements EventListener {
                     ((SlashCommandInteractionEvent) genericEvent).reply("Developing this feature. We will notify you when things ready.").setEphemeral(true).queue();
                     break;
                 case "shorten-link":
-                    ((SlashCommandInteractionEvent) genericEvent).reply("Developing this feature. We will notify you when things ready.").setEphemeral(true).queue();
+                    String shortenLink;
+                    try {
+                        shortenLink = new RequestController().create("free", new Link(((SlashCommandInteractionEvent) genericEvent).getOption("link").getAsString())).getShort_link();
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                    ((SlashCommandInteractionEvent) genericEvent).reply(shortenLink).setEphemeral(true).queue();
                     break;
                 case "custom-link":
                     ((SlashCommandInteractionEvent) genericEvent).reply("Developing this feature. We will notify you when things ready.").setEphemeral(true).queue();

@@ -26,7 +26,7 @@ public class RefillKeys implements Runnable {
             for (int i = 0; i < last.length(); i++) {
                 arr[i] = last.charAt(i);
             }
-            for (int i = 0; i < 101; i++) {
+            for (int i = 0; i < 201; i++) {
                 for (int r = arr.length - 1; r >= -1; r--) {
                     if (r >= 0) {
                         arr[r] += 1;
