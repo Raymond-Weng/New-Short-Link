@@ -31,10 +31,11 @@ public class RequestController {
             }
             response.setShort_link("https://rwlink.us.kg/" + id);
             response.setError(null);
-        } if(LinkManager.useName(link.getLink(), name)){
+        }
+        if (LinkManager.useName(link.getLink(), name)) {
             response.setShort_link("https://rwlink.us.kg/" + name);
             response.setError(null);
-        }else{
+        } else {
             response.setError("The name may be used or invalid.");
         }
 
