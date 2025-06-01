@@ -10,9 +10,59 @@ import java.util.Random;
 public class LinkManager {
     public static final List<String> BAN_KEYS = List.of("api", "discord", "create", "random");
 
-    public static String getLink() throws SQLException {
+    public static Connection getDataConnection() throws SQLException {
+        return DriverManager.getConnection("jdbc:sqlite:./database/data.db");
+    }
+
+    public static Connection getLinkConnection() throws SQLException {
+        return DriverManager.getConnection("jdbc:sqlite:./database/links.db");
+    }
+
+    /**
+     * check if the name usable and not used
+     * @param link the new link, write in if not used
+     * @param name the name to create link
+     * @param connection connection to database links
+     * @return if name usable and written
+     * @throws SQLException when sql write goes wrong
+     */
+    public static synchronized boolean useName(String link, String name, Connection connection) throws SQLException {
+        if(BAN_KEYS.contains(name)) { return false; }
+        PreparedStatement ps = connection.prepareStatement("SELECT LINK FROM LINKS WHERE KEY = ?");
+        ps.setString(1, name);
+        ResultSet resultSet = ps.executeQuery();
+        boolean exist = resultSet.next();
+        resultSet.close();
+        ps.close();
+        if (exist) {
+            return false;
+        }
+        //TODO write link into database
+        return true;
+    }
+
+    /**
+     * check if the name usable and not used
+     * @param link the new link, write in if not used
+     * @param name the name to create link
+     * @return if name usable and written
+     * @throws SQLException when sql write goes wrong
+     */
+    public static boolean useName(String link, String name) throws SQLException {
+        Connection connection = getLinkConnection();
+        boolean res = useName(link, name, connection);
+        connection.close();
+        return res;
+    }
+
+    /**
+     * get a random link without checking its availability
+     * @param connection connection to data database
+     * @return a random name
+     * @throws SQLException if something wrong while writing database
+     */
+    public synchronized static String getLink(Connection connection) throws SQLException {
         // fill unused keys
-        Connection connection = DriverManager.getConnection("jdbc:sqlite:./database/data.db");
         Statement statement = connection.createStatement();
         ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM KEYS");
         resultSet.next();
@@ -22,7 +72,6 @@ public class LinkManager {
         if (cnt < 50) {
             Thread thread = new Thread(new RefillKeys());
             thread.start();
-            cnt += 100;
         }
         statement = connection.createStatement();
         resultSet = statement.executeQuery("SELECT * FROM (SELECT * FROM KEYS ORDER BY ID LIMIT " + new Random().nextInt(cnt - 1) + ") ORDER BY ID DESC LIMIT 1");
@@ -32,10 +81,18 @@ public class LinkManager {
         statement = connection.createStatement();
         statement.execute("DELETE FROM KEYS WHERE KEY = \"" + res + "\"");
         statement.close();
-        if (isLinkExist(connection, res)) {
-            connection.close();
-            return getLink();
-        }
+        connection.close();
+        return res;
+    }
+
+    /**
+     * get a random link without checking its availability
+     * @return a random name
+     * @throws SQLException if something wrong while writing database
+     */
+    public static String getLink() throws SQLException {
+        Connection connection = getDataConnection();
+        String res = getLink(connection);
         connection.close();
         return res;
     }
@@ -71,25 +128,8 @@ public class LinkManager {
         connection.close();
     }
 
-    public static boolean isLinkExist(Connection connection, String key) throws SQLException {
-        PreparedStatement statement = connection.prepareStatement("SELECT LINK FROM LINKS WHERE KEY = ?");
-        statement.setString(1, key);
-        ResultSet resultSet = statement.executeQuery();
-        boolean res = resultSet.next();
-        resultSet.close();
-        statement.close();
-        return res;
-    }
-
-    public static boolean isLinkExist(String key) throws SQLException {
-        Connection connection = DriverManager.getConnection("jdbc:sqlite:./database/links.db");
-        boolean res = isLinkExist(connection, key);
-        connection.close();
-        return res;
-    }
-
     public static String getURL(String key) throws SQLException {
-        Connection connection = DriverManager.getConnection("jdbc:sqlite:./database/links.db");
+        Connection connection = getLinkConnection();
         PreparedStatement statement = connection.prepareStatement("SELECT LINK FROM LINKS WHERE KEY = ?");
         statement.setString(1, key);
         ResultSet resultSet = statement.executeQuery();

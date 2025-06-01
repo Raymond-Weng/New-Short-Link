@@ -1,9 +1,12 @@
 package com.raymondweng.newshortlink;
 
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.io.File;
+import java.io.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -13,6 +16,32 @@ import java.sql.Statement;
 public class NewShortLinkApplication {
 
     public static void main(String[] args) {
+        System.out.print("Input the token: ");
+        String token;
+        try {
+            InputStreamReader isr = new InputStreamReader(System.in);
+            BufferedReader br = new BufferedReader(isr);
+            token = br.readLine();
+            br.close();
+            isr.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        BotController.jda = JDABuilder
+                .createDefault(token)
+                .addEventListeners(new BotController())
+                .build();
+        BotController.jda
+                .upsertCommand("create-token", "Create a new token for api or custom token").queue();
+        BotController.jda
+                .upsertCommand("shorten-link", "Shorten a link.")
+                .addOption(OptionType.STRING, "link", "The link to be shorten.", true)
+                .queue();
+        BotController.jda
+                .upsertCommand("custom-link", "Create a custom shortened link. Create once every month for free.")
+                .addOption(OptionType.STRING, "link", "The link to be shorten", true)
+                .addOption(OptionType.STRING, "custom-name", "Link will be https://rwlink.us.kg/<custom-name>", true)
+                .queue();
 
         boolean databaseExists = new File("./database/data.db").exists();
         if (!databaseExists) {

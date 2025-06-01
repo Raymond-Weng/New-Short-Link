@@ -1,6 +1,5 @@
 package com.raymondweng.newshortlink;
 
-import com.raymondweng.newshortlink.exception.LinkNotFoundException;
 import com.raymondweng.newshortlink.request.Link;
 import com.raymondweng.newshortlink.response.CreateResponse;
 import org.springframework.web.bind.annotation.*;
@@ -25,17 +24,18 @@ public class RequestController {
     public CreateResponse create(@PathVariable String name, @RequestBody Link link) throws SQLException {
         CreateResponse response = new CreateResponse();
         response.setLink(link.getLink());
-        String id;
         if (name.equals("free")) {
-            id = LinkManager.getLink();
+            String id = LinkManager.getLink();
+            while (!LinkManager.useName(link.getLink(), id)) {
+                id = LinkManager.getLink();
+            }
             response.setShort_link("https://rwlink.us.kg/" + id);
             response.setError(null);
-        } else if (LinkManager.BAN_KEYS.contains(name)) {
-            response.setShort_link(null);
-            response.setError("Baned keys requested");
-            return response;
-        } else {
-
+        } if(LinkManager.useName(link.getLink(), name)){
+            response.setShort_link("https://rwlink.us.kg/" + name);
+            response.setError(null);
+        }else{
+            response.setError("The name may be used or invalid.");
         }
 
         //TODO link the link (id) with requested link

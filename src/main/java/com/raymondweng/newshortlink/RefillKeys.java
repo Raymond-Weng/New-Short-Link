@@ -52,10 +52,6 @@ public class RefillKeys implements Runnable {
                 for (int j : arr) {
                     res.append((char) j);
                 }
-                if (LinkManager.BAN_KEYS.contains(res.toString())) {
-                    i--;
-                    continue;
-                }
                 statement = connection.createStatement();
                 statement.execute("INSERT INTO KEYS (KEY) VALUES (\"" + res + "\")");
                 statement.close();

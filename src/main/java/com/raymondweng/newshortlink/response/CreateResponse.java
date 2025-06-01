@@ -1,10 +1,9 @@
 package com.raymondweng.newshortlink.response;
 
 public class CreateResponse {
-    String link;
-    String error;
-    String short_link;
-    String expiration;
+    String link = null;
+    String error = null;
+    String short_link = null;
 
     public String getLink() {
         return link;
