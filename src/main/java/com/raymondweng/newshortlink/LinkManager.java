@@ -20,14 +20,23 @@ public class LinkManager {
 
     /**
      * check if the name usable and not used
-     * @param link the new link, write in if not used
-     * @param name the name to create link
+     *
+     * @param link       the new link, write in if not used
+     * @param name       the name to create link
      * @param connection connection to database links
      * @return if name usable and written
      * @throws SQLException when sql write goes wrong
      */
     public static synchronized boolean useName(String link, String name, Connection connection) throws SQLException {
-        if(BAN_KEYS.contains(name)) { return false; }
+        if (BAN_KEYS.contains(name)) {
+            return false;
+        }
+        if (!name.matches("\\w+")) {
+            return false;
+        }
+        if(!link.matches("https?://\\S+")) {
+            return false;
+        }
         PreparedStatement ps = connection.prepareStatement("SELECT LINK FROM LINKS WHERE KEY = ?");
         ps.setString(1, name);
         ResultSet resultSet = ps.executeQuery();
@@ -37,12 +46,17 @@ public class LinkManager {
         if (exist) {
             return false;
         }
-        //TODO write link into database
+        ps = connection.prepareStatement("INSERT INTO LINKS (KEY, LINK) VALUES (?, ?)");
+        ps.setString(1, name);
+        ps.setString(2, link);
+        ps.execute();
+        ps.close();
         return true;
     }
 
     /**
      * check if the name usable and not used
+     *
      * @param link the new link, write in if not used
      * @param name the name to create link
      * @return if name usable and written
@@ -57,6 +71,7 @@ public class LinkManager {
 
     /**
      * get a random link without checking its availability
+     *
      * @param connection connection to data database
      * @return a random name
      * @throws SQLException if something wrong while writing database
@@ -74,7 +89,7 @@ public class LinkManager {
             thread.start();
         }
         statement = connection.createStatement();
-        resultSet = statement.executeQuery("SELECT * FROM (SELECT * FROM KEYS ORDER BY ID LIMIT " + new Random().nextInt(cnt - 1) + ") ORDER BY ID DESC LIMIT 1");
+        resultSet = statement.executeQuery("SELECT KEY FROM (SELECT * FROM KEYS ORDER BY ID LIMIT " + new Random().nextInt(cnt - 1) + ") ORDER BY ID DESC LIMIT 1");
         String res = resultSet.getString(1);
         resultSet.close();
         statement.close();
@@ -87,6 +102,7 @@ public class LinkManager {
 
     /**
      * get a random link without checking its availability
+     *
      * @return a random name
      * @throws SQLException if something wrong while writing database
      */

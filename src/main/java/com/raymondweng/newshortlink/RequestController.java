@@ -39,9 +39,6 @@ public class RequestController {
             response.setError("The name may be used or invalid.");
         }
 
-        //TODO link the link (id) with requested link
-
-
         return response;
     }
 }

@@ -19,11 +19,7 @@ public class BotController implements EventListener {
         if (genericEvent instanceof MessageReceivedEvent && !((MessageReceivedEvent) genericEvent).isFromGuild() && !((MessageReceivedEvent) genericEvent).getAuthor().isBot()) {
             ((MessageReceivedEvent) genericEvent).getMessage()
                     .reply("感謝您的訊息！但是我們僅有提供斜槓指令，請輸入'/'開始嘗試他們。\n" +
-                            "另外，也請看看我們的[官網](https://rwlink.us.kg)！\n" +
-                            "---\n" +
-                            "English: \n" +
-                            "Thanks for your message! However, we only offer slash commands for functions, try them by typing '/'.\n" +
-                            "Also, visit our [website](https://rwlink.us.kg)!")
+                            "另外，也請看看我們的[官網](https://rwlink.us.kg)！")
                     .queue();
         }
         if (genericEvent instanceof SlashCommandInteractionEvent) {
@@ -32,9 +28,13 @@ public class BotController implements EventListener {
                     ((SlashCommandInteractionEvent) genericEvent).reply("Developing this feature. We will notify you when things ready.").setEphemeral(true).queue();
                     break;
                 case "shorten-link":
+                    String link = ((SlashCommandInteractionEvent) genericEvent).getOption("link").getAsString();
+                    if(!link.matches("https?://\\S+")) {
+                        ((SlashCommandInteractionEvent) genericEvent).reply("請輸入正確的網址。").setEphemeral(true).queue();
+                    }
                     String shortenLink;
                     try {
-                        shortenLink = new RequestController().create("free", new Link(((SlashCommandInteractionEvent) genericEvent).getOption("link").getAsString())).getShort_link();
+                        shortenLink = new RequestController().create("free", new Link(link)).getShort_link();
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }

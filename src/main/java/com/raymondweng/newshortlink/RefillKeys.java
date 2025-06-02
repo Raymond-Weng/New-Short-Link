@@ -13,7 +13,7 @@ public class RefillKeys implements Runnable {
             int cnt = resultSet.getInt(1);
             resultSet.close();
             statement.close();
-            if (cnt >= 50) {
+            if (cnt >= 100) {
                 return;
             }
             statement = connection.createStatement();
