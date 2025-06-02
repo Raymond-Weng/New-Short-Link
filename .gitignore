@@ -33,5 +33,5 @@ build/
 .vscode/
 *.db
 *.jar
-src/main/resources/application.properties
-*.properties
+
+src/main/resources/*
