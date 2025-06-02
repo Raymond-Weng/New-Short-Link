@@ -31,7 +31,7 @@ public class LinkManager {
         if (BAN_KEYS.contains(name)) {
             return false;
         }
-        if (!name.matches("\\w+")) {
+        if (!name.matches("\\w+.\\w")) {
             return false;
         }
         if(!link.matches("https?://\\S+")) {
