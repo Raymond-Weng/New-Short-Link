@@ -1,3 +1,31 @@
 Manifest-Version: 1.0
 Main-Class: com.raymondweng.newshortlink.NewShortLinkApplication
+Class-Path: tomcat-embed-el-10.1.39.jar spring-aop-6.2.5.jar okio-3.6.0.
+ jar spring-xml-4.0.12.jar jackson-annotations-2.18.3.jar kotlin-stdlib-
+ jdk8-1.9.25.jar spring-boot-autoconfigure-3.4.4.jar kotlin-stdlib-1.9.2
+ 5.jar gson-2.11.0.jar spring-context-6.2.5.jar unbescape-1.1.6.RELEASE.
+ jar spring-boot-starter-thymeleaf-3.4.4.jar spring-beans-6.2.5.jar okio
+ -jvm-3.6.0.jar thymeleaf-3.1.3.RELEASE.jar jackson-datatype-jsr310-2.18
+ .3.jar sqlite-jdbc-3.49.1.0.jar core-3.1.0.jar snakeyaml-2.3.jar microm
+ eter-observation-1.14.5.jar txw2-4.0.5.jar jakarta.xml.bind-api-4.0.2.j
+ ar spring-ws-core-4.0.12.jar spring-webmvc-6.2.5.jar okhttp-4.12.0.jar 
+ jul-to-slf4j-2.0.17.jar jsr305-3.0.2.jar istack-commons-runtime-4.1.2.j
+ ar error_prone_annotations-2.22.0.jar protobuf-java-3.25.3.jar angus-ac
+ tivation-2.0.2.jar jackson-core-2.18.3.jar spring-core-6.2.5.jar spring
+ -expression-6.2.5.jar spring-boot-starter-web-services-3.4.4.jar saaj-i
+ mpl-3.0.4.jar jaxb-runtime-4.0.5.jar jakarta.xml.ws-api-4.0.2.jar logba
+ ck-core-1.5.18.jar jackson-module-parameter-names-2.18.3.jar commons-co
+ llections4-4.4.jar spring-boot-starter-web-3.4.4.jar tink-1.14.1.jar ja
+ xb-core-4.0.5.jar logback-classic-1.5.18.jar spring-boot-starter-tomcat
+ -3.4.4.jar micrometer-commons-1.14.5.jar slf4j-api-2.0.17.jar spring-we
+ b-6.2.5.jar jakarta.activation-api-2.1.3.jar stax-ex-2.1.0.jar tomcat-e
+ mbed-websocket-10.1.39.jar jakarta.xml.soap-api-3.0.2.jar java-dotenv-5
+ .2.2.jar thymeleaf-spring6-3.1.3.RELEASE.jar spring-boot-starter-loggin
+ g-3.4.4.jar log4j-api-2.24.3.jar jackson-databind-2.18.3.jar tomcat-emb
+ ed-core-10.1.39.jar kotlin-stdlib-common-1.9.25.jar nv-websocket-client
+ -2.14.jar spring-boot-starter-3.4.4.jar spring-boot-3.4.4.jar spring-ox
+ m-6.2.5.jar annotations-13.0.jar attoparser-2.0.7.RELEASE.jar jakarta.a
+ nnotation-api-2.1.1.jar spring-jcl-6.2.5.jar JDA-5.3.1.jar spring-boot-
+ starter-json-3.4.4.jar jackson-datatype-jdk8-2.18.3.jar log4j-to-slf4j-
+ 2.24.3.jar kotlin-stdlib-jdk7-1.9.25.jar
 

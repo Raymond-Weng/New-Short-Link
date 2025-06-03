@@ -1,8 +1,10 @@
 package com.raymondweng.newshortlink;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -16,19 +18,10 @@ import java.sql.Statement;
 public class NewShortLinkApplication {
 
     public static void main(String[] args) {
-        System.out.print("Input the token: ");
-        String token;
-        try {
-            InputStreamReader isr = new InputStreamReader(System.in);
-            BufferedReader br = new BufferedReader(isr);
-            token = br.readLine();
-            br.close();
-            isr.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        SpringApplication.run(NewShortLinkApplication.class, args);
+        Dotenv dotenv = Dotenv.configure().directory("./env").load();
         BotController.jda = JDABuilder
-                .createDefault(token)
+                .createDefault(dotenv.get("BOT_TOKEN"))
                 .addEventListeners(new BotController())
                 .build();
         BotController.jda
@@ -71,8 +64,7 @@ public class NewShortLinkApplication {
                 statement = connection.createStatement();
                 statement.execute("INSERT INTO KEYS (KEY) VALUES ('aaa')");
                 statement.close();
-                Thread thread = new Thread(new RefillKeys());
-                thread.start();
+                Thread.startVirtualThread(new RefillKeys());
                 // tokens
                 statement = connection.createStatement();
                 statement.executeUpdate("CREATE TABLE TOKENS" +
@@ -89,8 +81,6 @@ public class NewShortLinkApplication {
                 throw new RuntimeException(e);
             }
         }
-
-        SpringApplication.run(NewShortLinkApplication.class, args);
     }
 
 }

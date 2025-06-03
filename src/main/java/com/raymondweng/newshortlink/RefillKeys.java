@@ -3,8 +3,14 @@ package com.raymondweng.newshortlink;
 import java.sql.*;
 
 public class RefillKeys implements Runnable {
+    private volatile boolean keyRefilling = false;
+
     @Override
-    public synchronized void run() {
+    public void run() {
+        if(keyRefilling){
+            return;
+        }
+        keyRefilling = true;
         try {
             Connection connection = DriverManager.getConnection("jdbc:sqlite:./database/data.db");
             Statement statement = connection.createStatement();
@@ -26,7 +32,7 @@ public class RefillKeys implements Runnable {
             for (int i = 0; i < last.length(); i++) {
                 arr[i] = last.charAt(i);
             }
-            for (int i = 0; i < 201; i++) {
+            for (int i = 0; i < 50; i++) {
                 for (int r = arr.length - 1; r >= -1; r--) {
                     if (r >= 0) {
                         arr[r] += 1;
@@ -56,8 +62,11 @@ public class RefillKeys implements Runnable {
                 statement.execute("INSERT INTO KEYS (KEY) VALUES (\"" + res + "\")");
                 statement.close();
             }
+            connection.close();
+            System.out.println("Refilled 50 keys.");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        keyRefilling = false;
     }
 }

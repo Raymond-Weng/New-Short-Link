@@ -35,3 +35,4 @@ build/
 *.jar
 
 src/main/resources/*
+env/.env

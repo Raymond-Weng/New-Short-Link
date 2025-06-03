@@ -85,8 +85,7 @@ public class LinkManager {
         resultSet.close();
         statement.close();
         if (cnt < 100) {
-            Thread thread = new Thread(new RefillKeys());
-            thread.start();
+            Thread.startVirtualThread(new RefillKeys());
         }
         statement = connection.createStatement();
         resultSet = statement.executeQuery("SELECT KEY FROM (SELECT * FROM KEYS ORDER BY ID LIMIT " + new Random().nextInt(cnt - 1) + ") ORDER BY ID DESC LIMIT 1");
