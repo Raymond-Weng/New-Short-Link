@@ -14,7 +14,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.raymondweng.newshortlink")
 public class NewShortLinkApplication {
 
     public static void main(String[] args) {
