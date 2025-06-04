@@ -7,7 +7,7 @@ public class RefillKeys implements Runnable {
 
     @Override
     public void run() {
-        if(keyRefilling){
+        if (keyRefilling) {
             return;
         }
         keyRefilling = true;

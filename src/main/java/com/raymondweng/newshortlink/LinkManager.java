@@ -34,7 +34,7 @@ public class LinkManager {
         if (!name.matches("\\w+.\\w")) {
             return false;
         }
-        if(!link.matches("https?://\\S+")) {
+        if (!link.matches("https?://\\S+")) {
             return false;
         }
         PreparedStatement ps = connection.prepareStatement("SELECT LINK FROM LINKS WHERE KEY = ?");
