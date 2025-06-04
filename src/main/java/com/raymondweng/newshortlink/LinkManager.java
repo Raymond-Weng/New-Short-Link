@@ -11,11 +11,19 @@ public class LinkManager {
     public static final List<String> BAN_KEYS = List.of("api", "discord", "create", "free", "contacts", "404");
 
     public static Connection getDataConnection() throws SQLException {
-        return DriverManager.getConnection("jdbc:sqlite:./database/data.db");
+        Connection connection = DriverManager.getConnection("jdbc:sqlite:./database/data.db");
+        Statement statement = connection.createStatement();
+        statement.execute("PRAGMA BUSY_TIMEOUT = 30000");
+        statement.close();
+        return connection;
     }
 
     public static Connection getLinkConnection() throws SQLException {
-        return DriverManager.getConnection("jdbc:sqlite:./database/links.db");
+        Connection connection = DriverManager.getConnection("jdbc:sqlite:./database/links.db");
+        Statement statement = connection.createStatement();
+        statement.execute("PRAGMA BUSY_TIMEOUT = 30000");
+        statement.close();
+        return connection;
     }
 
     /**
