@@ -3,16 +3,23 @@ package com.raymondweng.newshortlink;
 import java.sql.*;
 
 public class RefillKeys implements Runnable {
-    private volatile boolean keyRefilling = false;
+    private static volatile boolean keyRefilling = false;
 
-    @Override
-    public void run() {
-        if (keyRefilling) {
-            return;
+    public synchronized boolean canRefill() {
+        if(keyRefilling) {
+            return false;
         }
         keyRefilling = true;
+        return keyRefilling;
+    }
+
+    @Override
+    public synchronized void run() {
+        if(!canRefill()) {
+            return;
+        }
         try {
-            Connection connection = DriverManager.getConnection("jdbc:sqlite:./database/data.db");
+            Connection connection = LinkManager.getDataConnection();
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM KEYS");
             resultSet.next();

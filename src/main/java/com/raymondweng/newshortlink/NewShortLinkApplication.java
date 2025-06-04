@@ -38,7 +38,7 @@ public class NewShortLinkApplication {
         if (!databaseExists) {
             try {
                 // create database of links
-                Connection connection = DriverManager.getConnection("jdbc:sqlite:./database/links.db");
+                Connection connection = LinkManager.getLinkConnection();
                 Statement statement = connection.createStatement();
                 statement.executeUpdate("CREATE TABLE LINKS" +
                         "(KEY TEXT NOT NULL," +
@@ -52,7 +52,7 @@ public class NewShortLinkApplication {
 
                 // create database of other things
                 // un-used keys
-                connection = DriverManager.getConnection("jdbc:sqlite:./database/data.db");
+                connection = LinkManager.getDataConnection();
                 statement = connection.createStatement();
                 statement.executeUpdate("CREATE TABLE KEYS" +
                         "(ID INTEGER PRIMARY KEY AUTOINCREMENT ," +

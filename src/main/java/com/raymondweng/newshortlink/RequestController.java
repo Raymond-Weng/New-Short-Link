@@ -28,7 +28,6 @@ public class RequestController {
     public CreateResponse create(String name, String link) throws SQLException {
         CreateResponse response = new CreateResponse();
         response.setLink(link);
-        System.out.println(name);
         if (name.equals("free")) {
             String id = LinkManager.getLink();
             while (!LinkManager.useName(link, id)) {

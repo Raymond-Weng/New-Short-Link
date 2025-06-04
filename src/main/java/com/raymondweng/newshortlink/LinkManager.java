@@ -113,7 +113,7 @@ public class LinkManager {
     }
 
     public static void useToken(String token) throws NoEnoughQuotaException, TokenNotFoundException, SQLException {
-        Connection connection = DriverManager.getConnection("jdbc:sqlite:./database/data.db");
+        Connection connection = LinkManager.getDataConnection();
         PreparedStatement statement = connection.prepareStatement("SELECT QUOTA FROM TOKENS WHERE TOKEN = ?");
         statement.setString(1, token);
         ResultSet resultSet = statement.executeQuery();
