@@ -35,7 +35,7 @@ public class BotController implements EventListener {
                     }
                     String shortenLink;
                     try {
-                        shortenLink = new RequestController().create("free", new Link(link)).getShort_link();
+                        shortenLink = new RequestController().create("free", link).getShort_link();
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
