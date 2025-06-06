@@ -10,7 +10,7 @@ public class RefillKeys implements Runnable {
             return false;
         }
         keyRefilling = true;
-        return keyRefilling;
+        return true;
     }
 
     @Override
@@ -21,7 +21,7 @@ public class RefillKeys implements Runnable {
         try {
             Connection connection = LinkManager.getDataConnection();
             Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM KEYS");
+            ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM NAMES");
             resultSet.next();
             int cnt = resultSet.getInt(1);
             resultSet.close();
@@ -30,7 +30,7 @@ public class RefillKeys implements Runnable {
                 return;
             }
             statement = connection.createStatement();
-            resultSet = statement.executeQuery("SELECT KEY FROM KEYS ORDER BY ID DESC LIMIT 1");
+            resultSet = statement.executeQuery("SELECT NAME FROM NAMES ORDER BY ID DESC LIMIT 1");
             resultSet.next();
             String last = resultSet.getString(1);
             resultSet.close();
@@ -66,7 +66,7 @@ public class RefillKeys implements Runnable {
                     res.append((char) j);
                 }
                 statement = connection.createStatement();
-                statement.execute("INSERT INTO KEYS (KEY) VALUES (\"" + res + "\")");
+                statement.execute("INSERT INTO NAMES (NAME) VALUES (\"" + res + "\")");
                 statement.close();
             }
             connection.close();

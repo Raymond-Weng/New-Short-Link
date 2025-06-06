@@ -2,6 +2,7 @@ package com.raymondweng.newshortlink;
 
 import com.raymondweng.newshortlink.exception.NoEnoughQuotaException;
 import com.raymondweng.newshortlink.exception.TokenNotFoundException;
+import io.github.cdimascio.dotenv.Dotenv;
 
 import java.sql.*;
 import java.util.List;
@@ -11,19 +12,13 @@ public class LinkManager {
     public static final List<String> BAN_KEYS = List.of("api", "discord", "create", "free", "contacts", "404");
 
     public static Connection getDataConnection() throws SQLException {
-        Connection connection = DriverManager.getConnection("jdbc:sqlite:./database/data.db");
-        Statement statement = connection.createStatement();
-        statement.execute("PRAGMA BUSY_TIMEOUT = 30000");
-        statement.close();
-        return connection;
+        Dotenv dotenv = Dotenv.configure().directory("./env").load();
+        return DriverManager.getConnection("jdbc:mysql://" + dotenv.get("DB_ADDRESS") + "/mydb?serverTimezone=Asia/Taipei", dotenv.get("DB_ACC"), dotenv.get("DB_PASS"));
     }
 
     public static Connection getLinkConnection() throws SQLException {
-        Connection connection = DriverManager.getConnection("jdbc:sqlite:./database/links.db");
-        Statement statement = connection.createStatement();
-        statement.execute("PRAGMA BUSY_TIMEOUT = 30000");
-        statement.close();
-        return connection;
+        Dotenv dotenv = Dotenv.configure().directory("./env").load();
+        return DriverManager.getConnection("jdbc:mysql://" + dotenv.get("DB_ADDRESS") + "/mydb?serverTimezone=Asia/Taipei", dotenv.get("DB_ACC"), dotenv.get("DB_PASS"));
     }
 
     /**
@@ -45,7 +40,7 @@ public class LinkManager {
         if (!link.matches("https?://\\S+")) {
             return false;
         }
-        PreparedStatement ps = connection.prepareStatement("SELECT LINK FROM LINKS WHERE KEY = ?");
+        PreparedStatement ps = connection.prepareStatement("SELECT LINK FROM LINKS WHERE NAME = ?");
         ps.setString(1, name);
         ResultSet resultSet = ps.executeQuery();
         boolean exist = resultSet.next();
@@ -54,7 +49,7 @@ public class LinkManager {
         if (exist) {
             return false;
         }
-        ps = connection.prepareStatement("INSERT INTO LINKS (KEY, LINK) VALUES (?, ?)");
+        ps = connection.prepareStatement("INSERT INTO LINKS (NAME, LINK) VALUES (?, ?)");
         ps.setString(1, name);
         ps.setString(2, link);
         ps.execute();
@@ -87,7 +82,7 @@ public class LinkManager {
     public synchronized static String getLink(Connection connection) throws SQLException {
         // fill unused keys
         Statement statement = connection.createStatement();
-        ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM KEYS");
+        ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM NAMES");
         resultSet.next();
         int cnt = resultSet.getInt(1);
         resultSet.close();
@@ -96,12 +91,13 @@ public class LinkManager {
             Thread.startVirtualThread(new RefillKeys());
         }
         statement = connection.createStatement();
-        resultSet = statement.executeQuery("SELECT KEY FROM (SELECT * FROM KEYS ORDER BY ID LIMIT " + new Random().nextInt(cnt - 1) + ") ORDER BY ID DESC LIMIT 1");
+        resultSet = statement.executeQuery("SELECT NAME FROM (SELECT * FROM NAMES ORDER BY ID LIMIT " + new Random().nextInt(cnt - 1) + ") AS temp ORDER BY ID DESC LIMIT 1");
+        resultSet.next();
         String res = resultSet.getString(1);
         resultSet.close();
         statement.close();
         statement = connection.createStatement();
-        statement.execute("DELETE FROM KEYS WHERE KEY = \"" + res + "\"");
+        statement.execute("DELETE FROM NAMES WHERE NAME = \"" + res + "\"");
         statement.close();
         connection.close();
         return res;
@@ -153,7 +149,7 @@ public class LinkManager {
 
     public static String getURL(String key) throws SQLException {
         Connection connection = getLinkConnection();
-        PreparedStatement statement = connection.prepareStatement("SELECT LINK FROM LINKS WHERE KEY = ?");
+        PreparedStatement statement = connection.prepareStatement("SELECT LINK FROM LINKS WHERE NAME = ?");
         statement.setString(1, key);
         ResultSet resultSet = statement.executeQuery();
         if (resultSet.next()) {
