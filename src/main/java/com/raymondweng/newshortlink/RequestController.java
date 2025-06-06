@@ -10,6 +10,12 @@ import java.util.Objects;
 
 @RestController
 public class RequestController {
+    @GetMapping("/api/resolve/{id}")
+    public RedirectView resolve(@PathVariable("id") String id) {
+        //TODO
+        return null;
+    }
+
     @GetMapping("/{id}")
     public RedirectView request(@PathVariable String id) throws SQLException {
         return new RedirectView(Objects.requireNonNullElse(LinkManager.getURL(id), "/404"));

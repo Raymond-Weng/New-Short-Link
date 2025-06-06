@@ -751,7 +751,7 @@
         立即縮短連結
       </a>
     </div>
-    <img src="https://placehold.co/800x400/e2e8f0/64748b?text=短網址服務示例" alt="URL縮短服務示例" class="hero-image">
+    <img src="https://raw.githubusercontent.com/Raymond-Weng/New-Short-Link/refs/heads/master/resources/example.png" alt="URL縮短服務示例" class="hero-image" width="500">
   </div>
 </section>
 
@@ -984,8 +984,11 @@
   let cooldownTimeLeft = 10;
 
   // 設置明年日期
-  const nextYear = new Date().getFullYear() + 1;
-  const nextYearDate = `${nextYear}/5/25`;
+  const today = new Date();
+  const nextYear = today.getFullYear() + 1;
+  const nextYearMonth = (today.getMonth() + 1).toString().padStart(2, '0');
+  const nextYearDay = today.getDate().toString().padStart(2, '0');
+  const nextYearDate = `${nextYear}/${nextYearMonth}/${nextYearDay}`;
   document.getElementById('next-year-date').textContent = nextYearDate;
 
   // 啟動冷卻計時器
@@ -1115,7 +1118,7 @@
                   }
                 }, 1000);
               } else {
-                errorMessage.textContent = `發生錯誤: ${error.message}`;
+                errorMessage.textContent = `發生錯誤: ${error.message} 請稍後再試或到Discord回報問題`;
                 errorMessage.style.display = 'block';
               }
 
@@ -1143,7 +1146,7 @@
         copyBtn.innerHTML = originalText;
       }, 2000);
     }).catch(err => {
-      console.error('無法複製文本: ', err);
+      console.error('無法複製連結: ', err);
       alert('複製失敗，請手動複製');
     });
   });
