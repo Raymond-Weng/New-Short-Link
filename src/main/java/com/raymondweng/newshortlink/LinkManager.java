@@ -135,37 +135,6 @@ public class LinkManager {
         return res;
     }
 
-    public static void useToken(String token) throws NoEnoughQuotaException, TokenNotFoundException, SQLException {
-        Connection connection = LinkManager.getConnection();
-        PreparedStatement statement = connection.prepareStatement("SELECT QUOTA FROM TOKENS WHERE TOKEN = ?");
-        statement.setString(1, token);
-        ResultSet resultSet = statement.executeQuery();
-        boolean hasQuotaLimit;
-        if (resultSet.next()) {
-            hasQuotaLimit = resultSet.getInt(1) == -1;
-            if (hasQuotaLimit && resultSet.getInt(1) == 0) {
-                resultSet.close();
-                statement.close();
-                connection.close();
-                throw new NoEnoughQuotaException();
-            }
-        } else {
-            resultSet.close();
-            statement.close();
-            connection.close();
-            throw new TokenNotFoundException();
-        }
-        resultSet.close();
-        statement.close();
-        if (hasQuotaLimit) {
-            statement = connection.prepareStatement("UPDATE TOKENS SET QUOTA = QUOTA - 1 WHERE TOKEN = ?");
-            statement.setString(1, token);
-            statement.executeUpdate();
-            statement.close();
-        }
-        connection.close();
-    }
-
     public static Pair<String, Boolean> getURL(String key) throws SQLException {
         Connection connection = getConnection();
         PreparedStatement statement = connection.prepareStatement("SELECT LINK, PREVIEW_PREVENT FROM LINKS WHERE NAME = ?");

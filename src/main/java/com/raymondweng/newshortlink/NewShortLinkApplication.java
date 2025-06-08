@@ -27,7 +27,7 @@ public class NewShortLinkApplication {
         BotController.jda
                 .upsertCommand("custom-link", "建立一個專屬於你的連結")
                 .addOption(OptionType.STRING, "link", "要被縮短的網址", true)
-                .addOption(OptionType.STRING, "name", "要在/後面出現的東西")
+                .addOption(OptionType.STRING, "name", "要在/後面出現的東西", true)
                 .addOption(OptionType.BOOLEAN, "preview_prevent", "是否需要防止預覽（預設：否）", false)
                 .queue();
         Thread.startVirtualThread(new RefillKeys());

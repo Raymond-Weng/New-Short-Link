@@ -1,5 +1,6 @@
 package com.raymondweng.newshortlink;
 
+import com.raymondweng.newshortlink.response.CreateResponse;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -8,6 +9,8 @@ import net.dv8tion.jda.api.hooks.EventListener;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 @RestController
@@ -25,29 +28,55 @@ public class BotController implements EventListener {
         if (genericEvent instanceof SlashCommandInteractionEvent) {
             switch (((SlashCommandInteractionEvent) genericEvent).getName()) {
                 case "create-token":
-                    ((SlashCommandInteractionEvent) genericEvent).reply("Developing this feature. We will notify you when things ready.").setEphemeral(true).queue();
+                    try {
+                        ((SlashCommandInteractionEvent) genericEvent).reply(TokenFilter.getToken(((SlashCommandInteractionEvent) genericEvent).getUser().getId())).setEphemeral(true).queue();
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
                     break;
                 case "shorten-link":
+                case "custom-link":
                     String link = ((SlashCommandInteractionEvent) genericEvent).getOption("link").getAsString();
                     if (!link.matches("https?://\\S+")) {
                         ((SlashCommandInteractionEvent) genericEvent).reply("請輸入正確的網址。").setEphemeral(true).queue();
                     }
                     String shortenLink;
                     try {
-                        shortenLink = new RequestController()
-                                .create(
-                                        "free",
-                                        link,
-                                        ((SlashCommandInteractionEvent) genericEvent).getOption("preview_prevent") != null && ((SlashCommandInteractionEvent) genericEvent).getOption("preview_prevent").getAsBoolean()
-                                )
-                                .getShort_link();
+                        if (((SlashCommandInteractionEvent) genericEvent).getName().equals("shorten-link")) {
+                            shortenLink = new RequestController()
+                                    .create(
+                                            "free",
+                                            link,
+                                            ((SlashCommandInteractionEvent) genericEvent).getOption("preview_prevent") != null && ((SlashCommandInteractionEvent) genericEvent).getOption("preview_prevent").getAsBoolean()
+                                    )
+                                    .getShort_link();
+                        } else {
+                            Connection connection = LinkManager.getConnection();
+                            TokenFilter.initUser(connection, ((SlashCommandInteractionEvent) genericEvent).getUser().getId());
+                            if(TokenFilter.useQuota(connection, ((SlashCommandInteractionEvent) genericEvent).getUser().getId())) {
+                                CreateResponse l = new RequestController()
+                                        .create(
+                                                ((SlashCommandInteractionEvent) genericEvent).getOption("name").getAsString(),
+                                                link,
+                                                ((SlashCommandInteractionEvent) genericEvent).getOption("preview_prevent") != null && ((SlashCommandInteractionEvent) genericEvent).getOption("preview_prevent").getAsBoolean()
+                                        );
+                                if (l.getShort_link() != null) {
+                                    shortenLink = l.getShort_link();
+                                } else {
+                                    shortenLink = "這個連結可能已經被佔用了，請嘗試其他連結";
+                                    PreparedStatement preparedStatement = connection.prepareStatement("UPDATE TOKENS SET QUOTA = QUOTA + 1 WHERE OWNER = ?");
+                                    preparedStatement.executeQuery();
+                                    preparedStatement.close();
+                                }
+                            }else{
+                                shortenLink = "你本月的額度已經用完了！請下個月在試（月初重置可能會有約兩個小時的處理時間）\n若同時有請求被拒絕，可能需要等待幾秒後再重新請求";
+                            }
+                            connection.close();
+                        }
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
                     ((SlashCommandInteractionEvent) genericEvent).reply(shortenLink).setEphemeral(true).queue();
-                    break;
-                case "custom-link":
-                    ((SlashCommandInteractionEvent) genericEvent).reply("Developing this feature. We will notify you when things ready.").setEphemeral(true).queue();
                     break;
             }
         }
