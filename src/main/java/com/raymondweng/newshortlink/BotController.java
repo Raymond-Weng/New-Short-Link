@@ -34,7 +34,13 @@ public class BotController implements EventListener {
                     }
                     String shortenLink;
                     try {
-                        shortenLink = new RequestController().create("free", link).getShort_link();
+                        shortenLink = new RequestController()
+                                .create(
+                                        "free",
+                                        link,
+                                        ((SlashCommandInteractionEvent) genericEvent).getOption("preview_prevent") != null && ((SlashCommandInteractionEvent) genericEvent).getOption("preview_prevent").getAsBoolean()
+                                )
+                                .getShort_link();
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }

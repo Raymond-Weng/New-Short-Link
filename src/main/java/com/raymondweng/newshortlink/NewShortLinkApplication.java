@@ -16,23 +16,25 @@ import java.sql.Statement;
 public class NewShortLinkApplication {
 
     public static void main(String[] args) throws ClassNotFoundException {
-        Class.forName("com.mysql.cj.jdbc.Driver");
         SpringApplication.run(NewShortLinkApplication.class, args);
+        Class.forName("com.mysql.cj.jdbc.Driver");
         Dotenv dotenv = Dotenv.configure().directory("./env").load();
         BotController.jda = JDABuilder
                 .createDefault(dotenv.get("BOT_TOKEN"))
                 .addEventListeners(new BotController())
                 .build();
         BotController.jda
-                .upsertCommand("create-token", "Create a new token for api or custom token").queue();
+                .upsertCommand("create-token", "建立一個token").queue();
         BotController.jda
-                .upsertCommand("shorten-link", "Shorten a link.")
-                .addOption(OptionType.STRING, "link", "The link to be shorten.", true)
+                .upsertCommand("shorten-link", "快速縮短網址")
+                .addOption(OptionType.STRING, "link", "要被縮短的網址", true)
+                .addOption(OptionType.BOOLEAN, "preview_prevent", "是否需要防止預覽（預設：否）", false)
                 .queue();
         BotController.jda
-                .upsertCommand("custom-link", "Create a custom shortened link. Create once every month for free.")
-                .addOption(OptionType.STRING, "link", "The link to be shorten", true)
-                .addOption(OptionType.STRING, "custom-name", "Link will be https://rwlink.us.kg/<custom-name>", true)
+                .upsertCommand("custom-link", "建立一個專屬於你的連結")
+                .addOption(OptionType.STRING, "link", "要被縮短的網址", true)
+                .addOption(OptionType.STRING, "name", "要在/後面出現的東西")
+                .addOption(OptionType.BOOLEAN, "preview_prevent", "是否需要防止預覽（預設：否）", false)
                 .queue();
         Thread.startVirtualThread(new RefillKeys());
     }

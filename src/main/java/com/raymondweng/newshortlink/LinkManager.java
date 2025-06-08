@@ -8,15 +8,33 @@ import java.sql.*;
 import java.util.List;
 import java.util.Random;
 
+class Pair<K, V> {
+    K key;
+    V value;
+
+    public Pair(K key, V value) {
+        this.key = key;
+        this.value = value;
+    }
+
+    public K getKey() {
+        return key;
+    }
+
+    public V getValue() {
+        return value;
+    }
+}
+
 public class LinkManager {
     public static final List<String> BAN_KEYS = List.of("api", "discord", "create", "free", "contacts", "404");
 
-    public static Connection getDataConnection() throws SQLException {
+    public static Connection getLinkConnection() throws SQLException {
         Dotenv dotenv = Dotenv.configure().directory("./env").load();
         return DriverManager.getConnection("jdbc:mysql://" + dotenv.get("DB_ADDRESS") + "/mydb?serverTimezone=Asia/Taipei", dotenv.get("DB_ACC"), dotenv.get("DB_PASS"));
     }
 
-    public static Connection getLinkConnection() throws SQLException {
+    public static Connection getConnection() throws SQLException {
         Dotenv dotenv = Dotenv.configure().directory("./env").load();
         return DriverManager.getConnection("jdbc:mysql://" + dotenv.get("DB_ADDRESS") + "/mydb?serverTimezone=Asia/Taipei", dotenv.get("DB_ACC"), dotenv.get("DB_PASS"));
     }
@@ -30,7 +48,7 @@ public class LinkManager {
      * @return if name usable and written
      * @throws SQLException when sql write goes wrong
      */
-    public static synchronized boolean useName(String link, String name, Connection connection) throws SQLException {
+    public static synchronized boolean useName(String link, String name, Connection connection, boolean preventPreview) throws SQLException {
         if (BAN_KEYS.contains(name)) {
             return false;
         }
@@ -49,9 +67,10 @@ public class LinkManager {
         if (exist) {
             return false;
         }
-        ps = connection.prepareStatement("INSERT INTO LINKS (NAME, LINK) VALUES (?, ?)");
+        ps = connection.prepareStatement("INSERT INTO LINKS (NAME, LINK, PREVIEW_PREVENT) VALUES (?, ?, ?)");
         ps.setString(1, name);
         ps.setString(2, link);
+        ps.setBoolean(3, preventPreview);
         ps.execute();
         ps.close();
         return true;
@@ -65,9 +84,9 @@ public class LinkManager {
      * @return if name usable and written
      * @throws SQLException when sql write goes wrong
      */
-    public static boolean useName(String link, String name) throws SQLException {
-        Connection connection = getLinkConnection();
-        boolean res = useName(link, name, connection);
+    public static boolean useName(String link, String name, boolean preventPreview) throws SQLException {
+        Connection connection = getConnection();
+        boolean res = useName(link, name, connection, preventPreview);
         connection.close();
         return res;
     }
@@ -110,14 +129,14 @@ public class LinkManager {
      * @throws SQLException if something wrong while writing database
      */
     public static String getLink() throws SQLException {
-        Connection connection = getDataConnection();
+        Connection connection = getConnection();
         String res = getLink(connection);
         connection.close();
         return res;
     }
 
     public static void useToken(String token) throws NoEnoughQuotaException, TokenNotFoundException, SQLException {
-        Connection connection = LinkManager.getDataConnection();
+        Connection connection = LinkManager.getConnection();
         PreparedStatement statement = connection.prepareStatement("SELECT QUOTA FROM TOKENS WHERE TOKEN = ?");
         statement.setString(1, token);
         ResultSet resultSet = statement.executeQuery();
@@ -147,17 +166,19 @@ public class LinkManager {
         connection.close();
     }
 
-    public static String getURL(String key) throws SQLException {
-        Connection connection = getLinkConnection();
-        PreparedStatement statement = connection.prepareStatement("SELECT LINK FROM LINKS WHERE NAME = ?");
+    public static Pair<String, Boolean> getURL(String key) throws SQLException {
+        Connection connection = getConnection();
+        PreparedStatement statement = connection.prepareStatement("SELECT LINK, PREVIEW_PREVENT FROM LINKS WHERE NAME = ?");
         statement.setString(1, key);
         ResultSet resultSet = statement.executeQuery();
         if (resultSet.next()) {
             String s = resultSet.getString("LINK");
+            Boolean previewPrevent = resultSet.getBoolean("PREVIEW_PREVENT");
             resultSet.close();
             statement.close();
             connection.close();
-            return s;
+            Thread.startVirtualThread(new RenewLink(key));
+            return new Pair<>(s, previewPrevent);
         } else {
             resultSet.close();
             statement.close();

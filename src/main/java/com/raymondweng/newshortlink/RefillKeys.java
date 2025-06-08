@@ -19,7 +19,7 @@ public class RefillKeys implements Runnable {
             return;
         }
         try {
-            Connection connection = LinkManager.getDataConnection();
+            Connection connection = LinkManager.getConnection();
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM NAMES");
             resultSet.next();
