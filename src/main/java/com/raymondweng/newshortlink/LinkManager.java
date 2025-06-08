@@ -67,7 +67,7 @@ public class LinkManager {
         if (exist) {
             return false;
         }
-        ps = connection.prepareStatement("INSERT INTO LINKS (NAME, LINK, PREVIEW_PREVENT) VALUES (?, ?, ?)");
+        ps = connection.prepareStatement("INSERT INTO LINKS (NAME, LINK, PREVIEW_PREVENT, LAST_USED) VALUES (?, ?, ?, CURRENT_DATE)");
         ps.setString(1, name);
         ps.setString(2, link);
         ps.setBoolean(3, preventPreview);

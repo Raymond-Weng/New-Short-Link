@@ -37,6 +37,7 @@ public class NewShortLinkApplication {
                 .addOption(OptionType.BOOLEAN, "preview_prevent", "是否需要防止預覽（預設：否）", false)
                 .queue();
         Thread.startVirtualThread(new RefillKeys());
+        Thread.startVirtualThread(new DeleteExpiredLinks());
     }
 
 }
