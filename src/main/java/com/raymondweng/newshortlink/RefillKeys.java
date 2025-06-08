@@ -1,12 +1,15 @@
 package com.raymondweng.newshortlink;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class RefillKeys implements Runnable {
     private static volatile boolean keyRefilling = false;
 
     public synchronized boolean canRefill() {
-        if(keyRefilling) {
+        if (keyRefilling) {
             return false;
         }
         keyRefilling = true;
@@ -15,7 +18,7 @@ public class RefillKeys implements Runnable {
 
     @Override
     public synchronized void run() {
-        if(!canRefill()) {
+        if (!canRefill()) {
             return;
         }
         try {

@@ -16,10 +16,10 @@ public class RequestController {
     @GetMapping("/{id}")
     public ResponseEntity<String> request(@PathVariable String id) throws SQLException {
         Pair<String, Boolean> pair = LinkManager.getURL(id);
-        if(pair == null){
+        if (pair == null) {
             return ResponseEntity.status(HttpStatus.FOUND).location(URI.create("/404")).build();
-        }else{
-            if(pair.getValue()){
+        } else {
+            if (pair.getValue()) {
                 return ResponseEntity
                         .ok()
                         .header("Content-Type", "text/html")
@@ -27,7 +27,7 @@ public class RequestController {
                                 "<body><p>你好！這裡是Raymond Weng製作的縮網址服務！</p>" +
                                 "<script>window.location.href = '" + Objects.requireNonNullElse(pair.getKey(), "/404") + "';</script>" +
                                 "</body></html>");
-            }else{
+            } else {
                 return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(pair.getKey())).build();
             }
         }

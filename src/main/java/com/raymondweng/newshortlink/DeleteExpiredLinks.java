@@ -1,25 +1,24 @@
 package com.raymondweng.newshortlink;
 
-import com.raymondweng.newshortlink.request.Link;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.*;
+import java.time.Instant;
 import java.util.Date;
 
 public class DeleteExpiredLinks implements Runnable {
     Date lastUpdated = Date.from(Instant.now());
+
     @Override
     public void run() {
-        while(true){
-            if(lastUpdated.compareTo(Date.from(Instant.now())) <= 0){
+        while (true) {
+            if (lastUpdated.compareTo(Date.from(Instant.now())) <= 0) {
                 try {
-                    Thread.sleep(1000*60*60);
+                    Thread.sleep(1000 * 60 * 60);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-            } else{
+            } else {
                 try {
                     Connection connection = LinkManager.getConnection();
                     Statement statement = connection.createStatement();
