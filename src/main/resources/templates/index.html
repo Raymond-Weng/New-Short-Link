@@ -836,9 +836,9 @@
             <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
           </svg>
         </div>
-        <h3 class="feature-title">安全可靠</h3>
+        <h3 class="feature-title">防止預覽</h3>
         <p class="feature-desc">
-          我們的服務採用最新的安全技術，確保您的連結安全可靠，防止惡意攻擊。
+          在<a href="/discord" target="_blank" rel="noopener noreferrer">Discord</a>中透過指令，可以讓各大聊天軟體無法預覽，輕鬆完成Rick roll。
         </p>
       </div>
 
@@ -1069,7 +1069,7 @@
                 throw new Error('rate_limit_exceeded');
               }
               if (!response.ok) {
-                throw new Error('網絡錯誤');
+                throw new Error('網絡錯誤，請稍後再試或到Discord回報問題');
               }
               return response.json();
             })
@@ -1098,7 +1098,7 @@
                 <line x1="12" y1="8" x2="12" y2="12"></line>
                 <line x1="12" y1="16" x2="12.01" y2="16"></line>
               </svg>
-              請求過於頻繁，請等待 <span class="countdown-text">10</span> 秒後再試
+              請求過於頻繁，請等待 <span class="countdown-text">10</span> 秒後再試。需要更快？來我們的Discord
             </div>
           `;
                 errorMessage.style.display = 'block';
@@ -1118,7 +1118,7 @@
                   }
                 }, 1000);
               } else {
-                errorMessage.textContent = `發生錯誤: ${error.message} 請稍後再試或到Discord回報問題`;
+                errorMessage.textContent = `發生錯誤: ${error.message}`;
                 errorMessage.style.display = 'block';
               }
 
