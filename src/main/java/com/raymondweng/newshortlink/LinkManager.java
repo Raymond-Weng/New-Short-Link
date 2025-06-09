@@ -52,7 +52,7 @@ public class LinkManager {
         if (BAN_KEYS.contains(name)) {
             return false;
         }
-        if (!name.matches("\\w+.\\w")) {
+        if (!name.matches("\\w{2,100}")) {
             return false;
         }
         if (!link.matches("https?://\\S+")) {
