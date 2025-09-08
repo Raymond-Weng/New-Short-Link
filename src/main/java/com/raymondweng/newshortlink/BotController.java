@@ -3,6 +3,7 @@ package com.raymondweng.newshortlink;
 import com.raymondweng.newshortlink.response.CreateResponse;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.GenericEvent;
+import net.dv8tion.jda.api.events.emoji.EmojiAddedEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
@@ -82,6 +83,9 @@ public class BotController implements EventListener {
                     }
                     break;
             }
+        }
+        if(genericEvent instanceof EmojiAddedEvent){
+            if(((EmojiAddedEvent)genericEvent).getEmoji().getName().equals("tada") && ((EmojiAddedEvent)genericEvent).getGuild().getId().equals(((EmojiAddedEvent) genericEvent).getGuild().getId())){}
         }
     }
 }

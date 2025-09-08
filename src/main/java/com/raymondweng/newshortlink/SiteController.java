@@ -1,5 +1,6 @@
 package com.raymondweng.newshortlink;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -7,6 +8,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class SiteController {
     @RequestMapping("/")
     public String index() {
+        if(NewShortLinkApplication.dotenv.get("MAINTAIN").equals("true")){
+            return "maintain.html";
+        }
         return "index.html";
     }
 

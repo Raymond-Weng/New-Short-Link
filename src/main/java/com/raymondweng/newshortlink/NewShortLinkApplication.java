@@ -9,10 +9,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class NewShortLinkApplication {
 
+    public static final Dotenv dotenv = Dotenv.configure().directory("./env").load();
+
     public static void main(String[] args) throws ClassNotFoundException {
         SpringApplication.run(NewShortLinkApplication.class, args);
         Class.forName("com.mysql.cj.jdbc.Driver");
-        Dotenv dotenv = Dotenv.configure().directory("./env").load();
         BotController.jda = JDABuilder
                 .createDefault(dotenv.get("BOT_TOKEN"))
                 .addEventListeners(new BotController())

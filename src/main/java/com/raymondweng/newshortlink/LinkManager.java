@@ -29,11 +29,6 @@ class Pair<K, V> {
 public class LinkManager {
     public static final List<String> BAN_KEYS = List.of("api", "discord", "create", "free", "contacts", "404");
 
-    public static Connection getLinkConnection() throws SQLException {
-        Dotenv dotenv = Dotenv.configure().directory("./env").load();
-        return DriverManager.getConnection("jdbc:mysql://" + dotenv.get("DB_ADDRESS") + "/mydb?serverTimezone=Asia/Taipei", dotenv.get("DB_ACC"), dotenv.get("DB_PASS"));
-    }
-
     public static Connection getConnection() throws SQLException {
         Dotenv dotenv = Dotenv.configure().directory("./env").load();
         return DriverManager.getConnection("jdbc:mysql://" + dotenv.get("DB_ADDRESS") + "/mydb?serverTimezone=Asia/Taipei", dotenv.get("DB_ACC"), dotenv.get("DB_PASS"));
