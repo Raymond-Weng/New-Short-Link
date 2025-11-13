@@ -36,7 +36,7 @@ public class TokenFilter extends OncePerRequestFilter {
     }
 
     public static synchronized String getToken(String user) throws SQLException {
-        Connection connection = LinkManager.getConnection();
+        Connection connection = LinkManager.hikariDataSource.getConnection();
         initUser(connection, user);
         String token = null;
         while (token == null) {
@@ -88,7 +88,7 @@ public class TokenFilter extends OncePerRequestFilter {
             if (authorization != null && authorization.startsWith("Bearer ")) {
                 String token = authorization.substring(7);
                 try {
-                    Connection connection = LinkManager.getConnection();
+                    Connection connection = LinkManager.hikariDataSource.getConnection();
                     PreparedStatement preparedStatement = connection.prepareStatement("SELECT OWNER FROM TOKENS WHERE TOKEN = ?");
                     preparedStatement.setString(1, token);
                     ResultSet resultSet = preparedStatement.executeQuery();

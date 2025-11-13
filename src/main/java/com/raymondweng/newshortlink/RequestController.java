@@ -18,8 +18,8 @@ import java.util.Objects;
 @RestController
 public class RequestController {
     @GetMapping("/{id}")
-    public ResponseEntity<String> request(@PathVariable String id) {
-        Pair<String, Boolean> pair = null;
+    public ResponseEntity<String> request(@PathVariable String id) throws SQLException {
+        Pair<String, Boolean> pair;
         try {
             pair = LinkManager.find(id);
         } catch (LinkNotFoundException e) {

@@ -51,7 +51,7 @@ public class BotController implements EventListener {
                                     )
                                     .getShort_link()).setEphemeral(true).queue();
                         } else {
-                            Connection connection = LinkManager.getConnection();
+                            Connection connection = LinkManager.hikariDataSource.getConnection();
                             TokenFilter.initUser(connection, ((SlashCommandInteractionEvent) genericEvent).getUser().getId());
                             if (TokenFilter.useQuota(connection, ((SlashCommandInteractionEvent) genericEvent).getUser().getId())) {
                                 CreateResponse l = new RequestController()

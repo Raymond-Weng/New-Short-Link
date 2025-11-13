@@ -1,7 +1,6 @@
 package com.raymondweng.newshortlink;
 
 import com.raymondweng.newshortlink.loops.AddToMySQL;
-import com.raymondweng.newshortlink.loops.DeleteExpiredLinks;
 import com.raymondweng.newshortlink.threads.RefillKeys;
 import io.github.cdimascio.dotenv.Dotenv;
 import net.dv8tion.jda.api.JDABuilder;
@@ -37,7 +36,6 @@ public class NewShortLinkApplication {
                 .queue();
 
         Thread.startVirtualThread(new RefillKeys());
-        Thread.startVirtualThread(new DeleteExpiredLinks());
         Thread.startVirtualThread(new AddToMySQL());
     }
 }

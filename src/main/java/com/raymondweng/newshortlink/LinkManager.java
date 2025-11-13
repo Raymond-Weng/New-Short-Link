@@ -3,19 +3,24 @@ package com.raymondweng.newshortlink;
 import com.raymondweng.newshortlink.exception.InvalidLinkException;
 import com.raymondweng.newshortlink.exception.InvalidNameException;
 import com.raymondweng.newshortlink.exception.LinkNotFoundException;
-import io.github.cdimascio.dotenv.Dotenv;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import redis.clients.jedis.AbstractTransaction;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Connection;
-import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import static com.raymondweng.newshortlink.NewShortLinkApplication.dotenv;
 
 class Pair<K, V> {
     K key;
@@ -38,10 +43,16 @@ class Pair<K, V> {
 public class LinkManager {
     public static final List<String> BAN_KEYS = List.of("api", "discord", "create", "free", "contacts", "404");
     public static final Pattern NAME_PATTERN = Pattern.compile("^(?=.*[A-Z])[a-zA-Z0-9]{2,100}");
+    public static final JedisPool jedisPool = new JedisPool("localhost", 6379);
+    public static final HikariDataSource hikariDataSource;
 
-    public static Connection getConnection() throws SQLException {
-        Dotenv dotenv = Dotenv.configure().directory("./env/.env").load();
-        return DriverManager.getConnection("jdbc:mysql://" + dotenv.get("DB_ADDRESS") + "/mydb?serverTimezone=Asia/Taipei", dotenv.get("DB_ACC"), dotenv.get("DB_PASS"));
+    static {
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        hikariConfig.setJdbcUrl("jdbc:mysql://" + dotenv.get("DB_ADDRESS") + "/mydb?serverTimezone=Asia/Taipei");
+        hikariConfig.setUsername(dotenv.get("DB_ACC"));
+        hikariConfig.setPassword(dotenv.get("DB_PASS"));
+        hikariDataSource = new HikariDataSource(hikariConfig);
     }
 
     /**
@@ -50,19 +61,36 @@ public class LinkManager {
      * @param name name of the link
      * @return (link, previewPrevent) if found else null
      */
-    public static Pair<String, Boolean> find(String name) throws LinkNotFoundException {
-        Jedis jedis = new Jedis("localhost");
-        jedis.select(1);
-        if (!jedis.exists(name)) {
-            //TODO find data and add into it
-        }
-        String link = jedis.get(name);
-        if (link.isBlank()) {
+    public static Pair<String, Boolean> find(String name) throws LinkNotFoundException, SQLException {
+        try (Jedis jedis = jedisPool.getResource()) {
+            jedis.select(1);
+            if (!jedis.exists(name)) {
+                try (Connection connection = hikariDataSource.getConnection()) {
+                    PreparedStatement statement = connection.prepareStatement("SELECT LINK, PREVIEW_PREVENT FROM LINKS WHERE NAME = ?");
+                    statement.setString(1, name);
+                    try (ResultSet resultSet = statement.executeQuery()) {
+                        if (resultSet.next()) {
+                            AbstractTransaction at = jedis.multi();
+                            at.setex(name, 10 * 60, resultSet.getString("LINK"));
+                            at.setex("p_" + name, 10 * 60, resultSet.getBoolean("PREVIEW_PREVENT") ? "1" : "0");
+                            at.exec();
+                            at.close();
+                        } else {
+                            jedis.set(name, "");
+                        }
+                    }
+                    statement.close();
+                }
+            }
+            String link = jedis.get(name);
+            boolean previewPrevent = jedis.get("p_" + name).equals("1");
+            if (link.isBlank()) {
+                jedis.close();
+                throw new LinkNotFoundException();
+            }
             jedis.close();
-            throw new LinkNotFoundException();
+            return new Pair<>(link, previewPrevent);
         }
-        jedis.close();
-        return new Pair<>(link, true);
     }
 
     /**
@@ -89,16 +117,15 @@ public class LinkManager {
         }
         String n = name.isEmpty() ? getName() : name;
 
-        Jedis jedis = new Jedis("localhost");
-        jedis.select(1);
-        AbstractTransaction abstractTransaction = jedis.multi();
-        abstractTransaction.sadd("toAdd", n);
-        abstractTransaction.set("l_" + n, link);
-        abstractTransaction.set("p_" + n, previewPrevent ? "1" : "0");
-        abstractTransaction.exec();
-        abstractTransaction.close();
-        jedis.close();
-
+        try (Jedis jedis = jedisPool.getResource()) {
+            jedis.select(1);
+            AbstractTransaction abstractTransaction = jedis.multi();
+            abstractTransaction.sadd("toAdd", n);
+            abstractTransaction.set("l_" + n, link);
+            abstractTransaction.set("p_" + n, previewPrevent ? "1" : "0");
+            abstractTransaction.exec();
+            abstractTransaction.close();
+        }
         return n;
     }
 
@@ -108,10 +135,11 @@ public class LinkManager {
      * @return yes, random name
      */
     private static String getName() {
-        Jedis jedis = new Jedis("localhost", 6379);
-        jedis.select(0);
-        String res = jedis.spop("keys");
-        jedis.close();
-        return res;
+        try (Jedis jedis = jedisPool.getResource()) {
+            jedis.select(0);
+            String res = jedis.spop("keys");
+            jedis.close();
+            return res;
+        }
     }
 }
