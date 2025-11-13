@@ -37,11 +37,6 @@ public class BotController implements EventListener {
                     break;
                 case "shorten-link":
                 case "custom-link":
-//                    if(((SlashCommandInteractionEvent) genericEvent).getName().equals("custom-link")) {
-//                        ((SlashCommandInteractionEvent) genericEvent).reply("此服務維修中").setEphemeral(true).queue();
-//                        break;
-//                    }
-
                     String link = ((SlashCommandInteractionEvent) genericEvent).getOption("link").getAsString();
                     if (!link.matches("https?://\\S+")) {
                         ((SlashCommandInteractionEvent) genericEvent).reply("請輸入正確的網址。").setEphemeral(true).queue();
@@ -85,7 +80,7 @@ public class BotController implements EventListener {
             }
         }
         if(genericEvent instanceof EmojiAddedEvent){
-            if(((EmojiAddedEvent)genericEvent).getEmoji().getName().equals("tada") && ((EmojiAddedEvent)genericEvent).getGuild().getId().equals(((EmojiAddedEvent) genericEvent).getGuild().getId())){}
+            if(((EmojiAddedEvent)genericEvent).getEmoji().getName().equals("tada") && ((EmojiAddedEvent)genericEvent).getGuild().getId().equals(((EmojiAddedEvent) genericEvent).getGuild().getId())){}//TODO
         }
     }
 }

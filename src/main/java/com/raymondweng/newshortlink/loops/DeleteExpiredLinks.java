@@ -1,4 +1,6 @@
-package com.raymondweng.newshortlink;
+package com.raymondweng.newshortlink.loops;
+
+import com.raymondweng.newshortlink.LinkManager;
 
 import java.sql.Connection;
 import java.sql.SQLException;

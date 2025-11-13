@@ -1,12 +1,21 @@
 package com.raymondweng.newshortlink;
 
-import com.raymondweng.newshortlink.exception.NoEnoughQuotaException;
-import com.raymondweng.newshortlink.exception.TokenNotFoundException;
+import com.raymondweng.newshortlink.exception.InvalidLinkException;
+import com.raymondweng.newshortlink.exception.InvalidNameException;
+import com.raymondweng.newshortlink.exception.LinkNotFoundException;
 import io.github.cdimascio.dotenv.Dotenv;
+import redis.clients.jedis.AbstractTransaction;
+import redis.clients.jedis.Jedis;
 
-import java.sql.*;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.List;
-import java.util.Random;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 class Pair<K, V> {
     K key;
@@ -28,126 +37,78 @@ class Pair<K, V> {
 
 public class LinkManager {
     public static final List<String> BAN_KEYS = List.of("api", "discord", "create", "free", "contacts", "404");
+    public static final Pattern NAME_PATTERN = Pattern.compile("^(?=.*[A-Z])[a-zA-Z0-9]{2,100}");
 
     public static Connection getConnection() throws SQLException {
-        Dotenv dotenv = Dotenv.configure().directory("./env").load();
+        Dotenv dotenv = Dotenv.configure().directory("./env/.env").load();
         return DriverManager.getConnection("jdbc:mysql://" + dotenv.get("DB_ADDRESS") + "/mydb?serverTimezone=Asia/Taipei", dotenv.get("DB_ACC"), dotenv.get("DB_PASS"));
     }
 
     /**
-     * check if the name usable and not used
-     *
-     * @param link       the new link, write in if not used
-     * @param name       the name to create link
-     * @param connection connection to database links
-     * @return if name usable and written
-     * @throws SQLException when sql write goes wrong
+     * find link by name
+     * @param name name of the link
+     * @return (link, previewPrevent) if found else null
      */
-    public static synchronized boolean useName(String link, String name, Connection connection, boolean preventPreview) throws SQLException {
-        if (BAN_KEYS.contains(name)) {
-            return false;
+    public static Pair<String, Boolean> find(String name) throws LinkNotFoundException {
+        Jedis jedis = new Jedis("localhost");
+        jedis.select(1);
+        if(!jedis.exists(name)){
+            //TODO find data and add into it
         }
-        if (!name.matches("\\w{2,100}")) {
-            return false;
+        String link = jedis.get(name);
+        if(link.isBlank()){
+            jedis.close();
+            throw new LinkNotFoundException();
         }
-        if (!link.matches("https?://\\S+")) {
-            return false;
-        }
-        PreparedStatement ps = connection.prepareStatement("SELECT LINK FROM LINKS WHERE NAME = ?");
-        ps.setString(1, name);
-        ResultSet resultSet = ps.executeQuery();
-        boolean exist = resultSet.next();
-        resultSet.close();
-        ps.close();
-        if (exist) {
-            return false;
-        }
-        ps = connection.prepareStatement("INSERT INTO LINKS (NAME, LINK, PREVIEW_PREVENT, LAST_USED) VALUES (?, ?, ?, CURRENT_DATE)");
-        ps.setString(1, name);
-        ps.setString(2, link);
-        ps.setBoolean(3, preventPreview);
-        ps.execute();
-        ps.close();
-        return true;
+        jedis.close();
+        return new Pair<>(link, true);
     }
 
     /**
-     * check if the name usable and not used
-     *
-     * @param link the new link, write in if not used
-     * @param name the name to create link
-     * @return if name usable and written
-     * @throws SQLException when sql write goes wrong
+     * register a link, another thread will add it to db later
+     * @param name name of link, leave it empty to get a random one,
+     *             custom link should contain at least a caption letter
+     * @param link link
+     * @param previewPrevent should we prevent social to preview it
+     * @throws InvalidNameException will be thrown if name is invalid
+     * @throws InvalidLinkException will be thrown if link is invalid
      */
-    public static boolean useName(String link, String name, boolean preventPreview) throws SQLException {
-        Connection connection = getConnection();
-        boolean res = useName(link, name, connection, preventPreview);
-        connection.close();
-        return res;
+    public static String register(String name, String link, boolean previewPrevent) throws InvalidNameException, InvalidLinkException {
+        if(BAN_KEYS.contains(name) || (name.isEmpty() && !NAME_PATTERN.matcher(name).matches())) {
+            throw new InvalidNameException();
+        }
+        try{
+            if(!Set.of("http", "https").contains(new URI(link).getScheme()) || !new URI(link).isAbsolute()) {
+                throw new InvalidLinkException();
+            }
+            new URI(link).toURL();
+        }catch (InvalidLinkException | MalformedURLException | URISyntaxException e){
+            throw new InvalidLinkException();
+        }
+        String n = name.isEmpty() ? getName() : name;
+
+        Jedis jedis = new Jedis("localhost");
+        jedis.select(1);
+        AbstractTransaction abstractTransaction = jedis.multi();
+        abstractTransaction.sadd("toAdd", n);
+        abstractTransaction.set("l_"+n, link);
+        abstractTransaction.set("p_"+n, previewPrevent ? "1" : "0");
+        abstractTransaction.exec();
+        abstractTransaction.close();
+        jedis.close();
+
+        return n;
     }
 
     /**
-     * get a random link without checking its availability
-     *
-     * @param connection connection to data database
-     * @return a random name
-     * @throws SQLException if something wrong while writing database
+     * get a random name
+     * @return yes, random name
      */
-    public synchronized static String getLink(Connection connection) throws SQLException {
-        // fill unused keys
-        Statement statement = connection.createStatement();
-        ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM NAMES");
-        resultSet.next();
-        int cnt = resultSet.getInt(1);
-        resultSet.close();
-        statement.close();
-        if (cnt < 100) {
-            Thread.startVirtualThread(new RefillKeys());
-        }
-        statement = connection.createStatement();
-        resultSet = statement.executeQuery("SELECT NAME FROM (SELECT * FROM NAMES ORDER BY ID LIMIT " + new Random().nextInt(cnt - 1) + ") AS temp ORDER BY ID DESC LIMIT 1");
-        resultSet.next();
-        String res = resultSet.getString(1);
-        resultSet.close();
-        statement.close();
-        statement = connection.createStatement();
-        statement.execute("DELETE FROM NAMES WHERE NAME = \"" + res + "\"");
-        statement.close();
-        connection.close();
+    private static String getName(){
+        Jedis jedis = new Jedis("localhost", 6379);
+        jedis.select(0);
+        String res = jedis.spop("keys");
+        jedis.close();
         return res;
-    }
-
-    /**
-     * get a random link without checking its availability
-     *
-     * @return a random name
-     * @throws SQLException if something wrong while writing database
-     */
-    public static String getLink() throws SQLException {
-        Connection connection = getConnection();
-        String res = getLink(connection);
-        connection.close();
-        return res;
-    }
-
-    public static Pair<String, Boolean> getURL(String key) throws SQLException {
-        Connection connection = getConnection();
-        PreparedStatement statement = connection.prepareStatement("SELECT LINK, PREVIEW_PREVENT FROM LINKS WHERE NAME = ?");
-        statement.setString(1, key);
-        ResultSet resultSet = statement.executeQuery();
-        if (resultSet.next()) {
-            String s = resultSet.getString("LINK");
-            Boolean previewPrevent = resultSet.getBoolean("PREVIEW_PREVENT");
-            resultSet.close();
-            statement.close();
-            connection.close();
-            Thread.startVirtualThread(new RenewLink(key));
-            return new Pair<>(s, previewPrevent);
-        } else {
-            resultSet.close();
-            statement.close();
-            connection.close();
-            return null;
-        }
     }
 }

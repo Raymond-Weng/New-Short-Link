@@ -1,5 +1,8 @@
 package com.raymondweng.newshortlink;
 
+import com.raymondweng.newshortlink.loops.AddToMySQL;
+import com.raymondweng.newshortlink.loops.DeleteExpiredLinks;
+import com.raymondweng.newshortlink.threads.RefillKeys;
 import io.github.cdimascio.dotenv.Dotenv;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -9,11 +12,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class NewShortLinkApplication {
 
-    public static final Dotenv dotenv = Dotenv.configure().directory("./env").load();
+    public static final Dotenv dotenv = Dotenv.configure().directory("./env/.env").load();
 
     public static void main(String[] args) throws ClassNotFoundException {
-        SpringApplication.run(NewShortLinkApplication.class, args);
         Class.forName("com.mysql.cj.jdbc.Driver");
+        SpringApplication.run(NewShortLinkApplication.class, args);
+
         BotController.jda = JDABuilder
                 .createDefault(dotenv.get("BOT_TOKEN"))
                 .addEventListeners(new BotController())
@@ -31,8 +35,9 @@ public class NewShortLinkApplication {
                 .addOption(OptionType.STRING, "name", "要在/後面出現的東西", true)
                 .addOption(OptionType.BOOLEAN, "preview_prevent", "是否需要防止預覽（預設：否）", false)
                 .queue();
+
         Thread.startVirtualThread(new RefillKeys());
         Thread.startVirtualThread(new DeleteExpiredLinks());
+        Thread.startVirtualThread(new AddToMySQL());
     }
-
 }
