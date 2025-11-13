@@ -57,24 +57,16 @@ public class RequestController {
                 id = LinkManager.register("", link, false);
             } catch (InvalidNameException e) {
             } catch (InvalidLinkException e) {
-                //TODO
+                response.setError("The link is invalid.");
             }
             response.setShort_link("https://rwlink.us.kg/" + id);
             response.setError(null);
         } else {
             try {
                 LinkManager.register(name, link, preventPreView);
-            } catch (InvalidNameException e) {
-                //TODO error msg
-            } catch (InvalidLinkException e) {
-                //TODO error msg
+            } catch (InvalidNameException | InvalidLinkException e) {
+                response.setError("The name may be used or invalid.");
             }
-//            if (LinkManager.useName(link, name, preventPreView)) {
-//                response.setShort_link("https://rwlink.us.kg/" + name);
-//                response.setError(null);
-//            } else {
-//                response.setError("The name may be used or invalid.");
-//            }
         }
 
         return response;

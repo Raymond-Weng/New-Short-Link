@@ -20,7 +20,6 @@ public class RefillKeys implements Runnable {
             return;
         }
         try (Jedis jedis = LinkManager.jedisPool.getResource()) {
-            jedis.select(0);
             if (jedis.scard("keys") >= 1000) {
                 keyRefilling = false;
                 return;

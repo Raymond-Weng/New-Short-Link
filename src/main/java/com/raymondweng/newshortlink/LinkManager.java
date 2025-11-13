@@ -63,7 +63,6 @@ public class LinkManager {
      */
     public static Pair<String, Boolean> find(String name) throws LinkNotFoundException, SQLException {
         try (Jedis jedis = jedisPool.getResource()) {
-            jedis.select(1);
             if (!jedis.exists(name)) {
                 try (Connection connection = hikariDataSource.getConnection()) {
                     PreparedStatement statement = connection.prepareStatement("SELECT LINK, PREVIEW_PREVENT FROM LINKS WHERE NAME = ?");
@@ -72,7 +71,7 @@ public class LinkManager {
                         if (resultSet.next()) {
                             AbstractTransaction at = jedis.multi();
                             at.setex(name, 10 * 60, resultSet.getString("LINK"));
-                            at.setex("p_" + name, 10 * 60, resultSet.getBoolean("PREVIEW_PREVENT") ? "1" : "0");
+                            at.setex("cp_" + name, 10 * 60, resultSet.getBoolean("PREVIEW_PREVENT") ? "1" : "0");
                             at.exec();
                             at.close();
                         } else {
@@ -83,12 +82,10 @@ public class LinkManager {
                 }
             }
             String link = jedis.get(name);
-            boolean previewPrevent = jedis.get("p_" + name).equals("1");
             if (link.isBlank()) {
-                jedis.close();
                 throw new LinkNotFoundException();
             }
-            jedis.close();
+            boolean previewPrevent = "1".equals(jedis.get("p_" + name));
             return new Pair<>(link, previewPrevent);
         }
     }
@@ -104,7 +101,7 @@ public class LinkManager {
      * @throws InvalidLinkException will be thrown if link is invalid
      */
     public static String register(String name, String link, boolean previewPrevent) throws InvalidNameException, InvalidLinkException {
-        if (BAN_KEYS.contains(name) || (name.isEmpty() && !NAME_PATTERN.matcher(name).matches())) {
+        if (BAN_KEYS.contains(name) || (!name.isEmpty() && !NAME_PATTERN.matcher(name).matches())) {
             throw new InvalidNameException();
         }
         try {
@@ -116,16 +113,26 @@ public class LinkManager {
             throw new InvalidLinkException();
         }
         String n = name.isEmpty() ? getName() : name;
-
-        try (Jedis jedis = jedisPool.getResource()) {
-            jedis.select(1);
-            AbstractTransaction abstractTransaction = jedis.multi();
-            abstractTransaction.sadd("toAdd", n);
-            abstractTransaction.set("l_" + n, link);
-            abstractTransaction.set("p_" + n, previewPrevent ? "1" : "0");
-            abstractTransaction.exec();
-            abstractTransaction.close();
+        try {
+            find(n);
+        } catch (LinkNotFoundException e) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                AbstractTransaction at = jedis.multi();
+                at.setex(n, 10 * 60, link);
+                at.setex("cp_" + n, 10 * 60, previewPrevent ? "1" : "0");
+                at.exec();
+                at.close();
+                at = jedis.multi();
+                at.lpush("toAdd", n);
+                at.set("l_" + n, link);
+                at.set("p_" + n, previewPrevent ? "1" : "0");
+                at.exec();
+                at.close();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
+
         return n;
     }
 
@@ -136,10 +143,7 @@ public class LinkManager {
      */
     private static String getName() {
         try (Jedis jedis = jedisPool.getResource()) {
-            jedis.select(0);
-            String res = jedis.spop("keys");
-            jedis.close();
-            return res;
+            return jedis.spop("keys");
         }
     }
 }
