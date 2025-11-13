@@ -96,14 +96,14 @@ public class TokenFilter extends OncePerRequestFilter {
                         String user = resultSet.getString("OWNER");
                         resultSet.close();
                         preparedStatement.close();
-                        if(useQuota(connection, user)){
+                        if (useQuota(connection, user)) {
                             response.setStatus(HttpServletResponse.SC_OK);
-                        }else{
+                        } else {
                             response.setStatus(429);
                             response.getWriter().write("Out of quota. Please try again later.");
                             return;
                         }
-                    }else{
+                    } else {
                         resultSet.close();
                         preparedStatement.close();
                         connection.close();

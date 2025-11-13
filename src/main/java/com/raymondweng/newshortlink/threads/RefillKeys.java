@@ -25,21 +25,21 @@ public class RefillKeys implements Runnable {
             return;
         }
         String next = jedis.get("NEXT");
-        for(int i = 0; i < 1000; i++){
+        for (int i = 0; i < 1000; i++) {
             jedis.sadd("keys", next);
             boolean added = false;
             StringBuilder sb = new StringBuilder();
-            for(int r = next.length()-1; r >= 0; r--){
-                if(next.charAt(r) == 'z'){
+            for (int r = next.length() - 1; r >= 0; r--) {
+                if (next.charAt(r) == 'z') {
                     sb.append('a');
-                }else{
-                    sb.append((char)(next.charAt(r)+1));
+                } else {
+                    sb.append((char) (next.charAt(r) + 1));
                     sb.append(new StringBuilder(next.substring(0, r)).reverse());
                     added = true;
                     break;
                 }
             }
-            if(!added){
+            if (!added) {
                 sb.append('a');
             }
             next = sb.reverse().toString();

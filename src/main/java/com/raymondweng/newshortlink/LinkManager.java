@@ -46,17 +46,18 @@ public class LinkManager {
 
     /**
      * find link by name
+     *
      * @param name name of the link
      * @return (link, previewPrevent) if found else null
      */
     public static Pair<String, Boolean> find(String name) throws LinkNotFoundException {
         Jedis jedis = new Jedis("localhost");
         jedis.select(1);
-        if(!jedis.exists(name)){
+        if (!jedis.exists(name)) {
             //TODO find data and add into it
         }
         String link = jedis.get(name);
-        if(link.isBlank()){
+        if (link.isBlank()) {
             jedis.close();
             throw new LinkNotFoundException();
         }
@@ -66,23 +67,24 @@ public class LinkManager {
 
     /**
      * register a link, another thread will add it to db later
-     * @param name name of link, leave it empty to get a random one,
-     *             custom link should contain at least a caption letter
-     * @param link link
+     *
+     * @param name           name of link, leave it empty to get a random one,
+     *                       custom link should contain at least a caption letter
+     * @param link           link
      * @param previewPrevent should we prevent social to preview it
      * @throws InvalidNameException will be thrown if name is invalid
      * @throws InvalidLinkException will be thrown if link is invalid
      */
     public static String register(String name, String link, boolean previewPrevent) throws InvalidNameException, InvalidLinkException {
-        if(BAN_KEYS.contains(name) || (name.isEmpty() && !NAME_PATTERN.matcher(name).matches())) {
+        if (BAN_KEYS.contains(name) || (name.isEmpty() && !NAME_PATTERN.matcher(name).matches())) {
             throw new InvalidNameException();
         }
-        try{
-            if(!Set.of("http", "https").contains(new URI(link).getScheme()) || !new URI(link).isAbsolute()) {
+        try {
+            if (!Set.of("http", "https").contains(new URI(link).getScheme()) || !new URI(link).isAbsolute()) {
                 throw new InvalidLinkException();
             }
             new URI(link).toURL();
-        }catch (InvalidLinkException | MalformedURLException | URISyntaxException e){
+        } catch (InvalidLinkException | MalformedURLException | URISyntaxException e) {
             throw new InvalidLinkException();
         }
         String n = name.isEmpty() ? getName() : name;
@@ -91,8 +93,8 @@ public class LinkManager {
         jedis.select(1);
         AbstractTransaction abstractTransaction = jedis.multi();
         abstractTransaction.sadd("toAdd", n);
-        abstractTransaction.set("l_"+n, link);
-        abstractTransaction.set("p_"+n, previewPrevent ? "1" : "0");
+        abstractTransaction.set("l_" + n, link);
+        abstractTransaction.set("p_" + n, previewPrevent ? "1" : "0");
         abstractTransaction.exec();
         abstractTransaction.close();
         jedis.close();
@@ -102,9 +104,10 @@ public class LinkManager {
 
     /**
      * get a random name
+     *
      * @return yes, random name
      */
-    private static String getName(){
+    private static String getName() {
         Jedis jedis = new Jedis("localhost", 6379);
         jedis.select(0);
         String res = jedis.spop("keys");

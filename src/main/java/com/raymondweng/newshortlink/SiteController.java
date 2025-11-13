@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class SiteController {
     @RequestMapping("/")
     public String index() {
-        if(NewShortLinkApplication.dotenv.get("MAINTAIN").equals("true")){
+        if (NewShortLinkApplication.dotenv.get("MAINTAIN").equals("true")) {
             return "maintain.html";
         }
         return "index.html";

@@ -18,25 +18,24 @@ import java.util.Objects;
 @RestController
 public class RequestController {
     @GetMapping("/{id}")
-    public ResponseEntity<String> request(@PathVariable String id) throws LinkNotFoundException {
-        Pair<String, Boolean> pair = LinkManager.find(id);
-        if (pair == null) {
+    public ResponseEntity<String> request(@PathVariable String id) {
+        Pair<String, Boolean> pair = null;
+        try {
+            pair = LinkManager.find(id);
+        } catch (LinkNotFoundException e) {
             return ResponseEntity.status(HttpStatus.FOUND).location(URI.create("/404")).build();
-        } else {
-            if (pair.getValue()) {
-
-                return ResponseEntity
-                        .ok()
-                        .header("Content-Type", "text/html")
-                        .body("<html><head><meta charset='UTF-8'><title>正在重新導向</title></head>" +
-                                "<body><p>你好！這裡是Raymond Weng製作的縮網址服務！如果沒有重新導向請啟用JavaScript，謝謝</p>" +
-                                "<script>window.location.href = '" + JavaScriptUtils.javaScriptEscape(Objects.requireNonNullElse(pair.getKey(), "/404")) + "';</script>" +
-                                "</body></html>");
-            } else {
-                return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(pair.getKey())).build();
-            }
         }
-
+        if (pair.getValue()) {
+            return ResponseEntity
+                    .ok()
+                    .header("Content-Type", "text/html")
+                    .body("<html><head><meta charset='UTF-8'><title>正在重新導向</title></head>" +
+                            "<body><p>你好！這裡是Raymond Weng製作的縮網址服務！如果沒有重新導向請啟用JavaScript，謝謝</p>" +
+                            "<script>window.location.href = '" + JavaScriptUtils.javaScriptEscape(Objects.requireNonNullElse(pair.getKey(), "/404")) + "';</script>" +
+                            "</body></html>");
+        } else {
+            return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(pair.getKey())).build();
+        }
     }
 
     @GetMapping("/discord")
@@ -56,7 +55,8 @@ public class RequestController {
             String id = null;
             try {
                 id = LinkManager.register("", link, false);
-            } catch (InvalidNameException e) {} catch (InvalidLinkException e) {
+            } catch (InvalidNameException e) {
+            } catch (InvalidLinkException e) {
                 //TODO
             }
             response.setShort_link("https://rwlink.us.kg/" + id);

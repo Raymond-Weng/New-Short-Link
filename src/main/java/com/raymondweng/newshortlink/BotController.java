@@ -53,7 +53,7 @@ public class BotController implements EventListener {
                         } else {
                             Connection connection = LinkManager.getConnection();
                             TokenFilter.initUser(connection, ((SlashCommandInteractionEvent) genericEvent).getUser().getId());
-                            if(TokenFilter.useQuota(connection, ((SlashCommandInteractionEvent) genericEvent).getUser().getId())) {
+                            if (TokenFilter.useQuota(connection, ((SlashCommandInteractionEvent) genericEvent).getUser().getId())) {
                                 CreateResponse l = new RequestController()
                                         .create(
                                                 ((SlashCommandInteractionEvent) genericEvent).getOption("name").getAsString(),
@@ -68,7 +68,7 @@ public class BotController implements EventListener {
                                     preparedStatement.executeUpdate();
                                     preparedStatement.close();
                                 }
-                            }else{
+                            } else {
                                 ((SlashCommandInteractionEvent) genericEvent).reply("你本月的額度已經用完了！請下個月在試（月初重置可能會有約兩個小時的處理時間）\n若同時有請求被拒絕，可能需要等待幾秒後再重新請求").setEphemeral(true).queue();
                             }
                             connection.close();
@@ -79,8 +79,9 @@ public class BotController implements EventListener {
                     break;
             }
         }
-        if(genericEvent instanceof EmojiAddedEvent){
-            if(((EmojiAddedEvent)genericEvent).getEmoji().getName().equals("tada") && ((EmojiAddedEvent)genericEvent).getGuild().getId().equals(((EmojiAddedEvent) genericEvent).getGuild().getId())){}//TODO
+        if (genericEvent instanceof EmojiAddedEvent) {
+            if (((EmojiAddedEvent) genericEvent).getEmoji().getName().equals("tada") && ((EmojiAddedEvent) genericEvent).getGuild().getId().equals(((EmojiAddedEvent) genericEvent).getGuild().getId())) {
+            }//TODO
         }
     }
 }
