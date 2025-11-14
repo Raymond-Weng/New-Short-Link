@@ -43,7 +43,7 @@ class Pair<K, V> {
 public class LinkManager {
     public static final List<String> BAN_KEYS = List.of("api", "discord", "create", "free", "contacts", "404");
     public static final Pattern NAME_PATTERN = Pattern.compile("^(?=.*[A-Z])[a-zA-Z0-9]{2,100}");
-    public static final JedisPool jedisPool = new JedisPool("localhost", 6379);
+    public static final JedisPool jedisPool = new JedisPool("redis-server", 6379);
     public static final HikariDataSource hikariDataSource;
 
     static {
