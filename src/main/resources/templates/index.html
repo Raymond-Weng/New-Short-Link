@@ -330,14 +330,6 @@
       color: var(--text-primary);
     }
 
-    .expiration-info {
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
     .result-content {
       display: flex;
       align-items: center;
@@ -773,13 +765,6 @@
     <div id="result-card" class="result-card">
       <div class="result-header">
         <h3 class="result-title">您的短網址已生成</h3>
-        <div class="expiration-info">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-          <span>超過<span id="next-year-date"></span>未使用會被刪除</span>
-        </div>
       </div>
       <div class="result-content">
         <div>
@@ -804,7 +789,7 @@
       </div>
     </div>
     <div class="terms">
-      連結超過一年沒有使用會被刪除。有任何疑問？加入我們的<a href="/discord" target="_blank" rel="noopener noreferrer">Discord</a>
+      有任何疑問？加入我們的<a href="/discord" target="_blank" rel="noopener noreferrer">Discord</a>
     </div>
   </div>
 </section>
@@ -979,14 +964,6 @@
   let isCooldown = false;
   let cooldownInterval;
   let cooldownTimeLeft = 10;
-
-  // 設置明年日期
-  const today = new Date();
-  const nextYear = today.getFullYear() + 1;
-  const nextYearMonth = (today.getMonth() + 1).toString().padStart(2, '0');
-  const nextYearDay = today.getDate().toString().padStart(2, '0');
-  const nextYearDate = `${nextYear}/${nextYearMonth}/${nextYearDay}`;
-  document.getElementById('next-year-date').textContent = nextYearDate;
 
   // 啟動冷卻計時器
   function startCooldown() {
