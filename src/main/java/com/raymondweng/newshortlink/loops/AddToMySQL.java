@@ -17,11 +17,12 @@ public class AddToMySQL implements Runnable {
                 String link = jedis.get("l_"+name);
                 jedis.del("l_"+name);
                 String previewPrevent = jedis.get("p_"+name);
+                jedis.del("p_"+name);
                 try(Connection connection = LinkManager.hikariDataSource.getConnection()){
                     PreparedStatement statement = connection.prepareStatement("insert into LINKS(NAME, LINK, PREVIEW_PREVENT) values(?,?,?)");
                     statement.setString(1, name);
                     statement.setString(2, link);
-                    statement.setString(3, previewPrevent);
+                    statement.setBoolean(3, previewPrevent.equals("1"));
                     statement.execute();
                     statement.close();
                 }catch(SQLException e){
