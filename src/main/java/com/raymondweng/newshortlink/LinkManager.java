@@ -75,7 +75,7 @@ public class LinkManager {
                             at.exec();
                             at.close();
                         } else {
-                            jedis.set(name, "");
+                            jedis.setex(name, 5*60, "");
                         }
                     }
                     statement.close();
@@ -85,7 +85,7 @@ public class LinkManager {
             if (link.isBlank()) {
                 throw new LinkNotFoundException();
             }
-            boolean previewPrevent = "1".equals(jedis.get("p_" + name));
+            boolean previewPrevent = "1".equals(jedis.get("cp_" + name));
             return new Pair<>(link, previewPrevent);
         }
     }

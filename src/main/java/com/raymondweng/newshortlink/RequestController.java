@@ -54,7 +54,7 @@ public class RequestController {
         if (name.equals("free")) {
             String id = null;
             try {
-                id = LinkManager.register("", link, false);
+                id = LinkManager.register("", link, preventPreView);
             } catch (InvalidNameException e) {
             } catch (InvalidLinkException e) {
                 response.setError("The link is invalid.");
