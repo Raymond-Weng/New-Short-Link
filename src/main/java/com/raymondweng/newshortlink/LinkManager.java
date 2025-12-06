@@ -112,25 +112,31 @@ public class LinkManager {
         } catch (InvalidLinkException | MalformedURLException | URISyntaxException e) {
             throw new InvalidLinkException();
         }
-        String n = name.isEmpty() ? getName() : name;
-        try {
-            find(n);
-        } catch (LinkNotFoundException e) {
-            try (Jedis jedis = jedisPool.getResource()) {
-                AbstractTransaction at = jedis.multi();
-                at.setex(n, 10 * 60, link);
-                at.setex("cp_" + n, 10 * 60, previewPrevent ? "1" : "0");
-                at.exec();
-                at.close();
-                at = jedis.multi();
-                at.lpush("toAdd", n);
-                at.set("l_" + n, link);
-                at.set("p_" + n, previewPrevent ? "1" : "0");
-                at.exec();
-                at.close();
+        String n;
+        if(name.isEmpty()) {
+            n = getName();
+        } else {
+            n = name;
+            try{
+                find(n);
+                throw new InvalidNameException();
+            } catch (LinkNotFoundException ignored) {
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        }
+        try (Jedis jedis = jedisPool.getResource()) {
+            AbstractTransaction at = jedis.multi();
+            at.setex(n, 10 * 60, link);
+            at.setex("cp_" + n, 10 * 60, previewPrevent ? "1" : "0");
+            at.exec();
+            at.close();
+            at = jedis.multi();
+            at.lpush("toAdd", n);
+            at.set("l_" + n, link);
+            at.set("p_" + n, previewPrevent ? "1" : "0");
+            at.exec();
+            at.close();
         }
 
         return n;
